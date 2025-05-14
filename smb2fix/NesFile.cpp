@@ -235,7 +235,7 @@ void NesFile::create_copy(std::ifstream &rom) {
 }
 
 void NesFile::save_file(std::string &file_name) {
-  std::ofstream dst(file_name + ".nes", std::ios::binary);
+  std::ofstream dst(file_name, std::ios::binary);
   dst.write(reinterpret_cast<const char *>(rom_data_.data()),
             static_cast<std::streamsize>(rom_data_.size() * sizeof(uint8_t)));
 }

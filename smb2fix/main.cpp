@@ -4,6 +4,7 @@
 #include <fstream>
 #include <filesystem>
 #include <limits>
+#include <string_view>
 #include "NesFile.hpp"
 
 static void prompt_user(std::string &input, const std::string message) {
@@ -17,11 +18,13 @@ static void press_enter_to_continue(void) {
 }
 
 static bool validate_out_file(std::string &out_file_name) {
-  // check for .nes
+  if (!out_file_name.ends_with(".nes"))
+    out_file_name += ".nes";
   if (std::filesystem::exists(out_file_name)) {
     std::string confirmation;
-    prompt_user(confirmation, "Warning! This file already exist! Do you wish to overwrite it [y]: ");
+    prompt_user(confirmation, "Warning: This file exists. To overwrite, type 'y' or 'Y' and press Enter:");
     if (confirmation != "y" && confirmation != "Y") {
+      std::cerr << "Relaunch the program with another file name" << std::endl;
       press_enter_to_continue();
       return false;
     }
@@ -68,10 +71,8 @@ static bool valid_file(std::ifstream &rom, std::string &file_name) {
 	rom.seekg(0, std::ios_base::beg);
 	rom.seekg(0, std::ios_base::end);
 	int length = rom.tellg();
-	if (length != 524304) {
-    std::cerr << "Invalid length for the rom" << std::endl;
-		return false;
-  }
+	if (length != 524304)
+    return print_error_message("Invalid size for the rom");
 	rom.seekg(0, std::ios_base::beg);
   return true;
 }
@@ -96,7 +97,7 @@ int main(int argc, char **argv) {
     return 1;
   }
   nes_file.print_summary();
-  std::string save_file_name ("abc.nes");
+  std::string save_file_name ("result");
   if (!validate_out_file(save_file_name))
     return 1;
   nes_file.save_file(save_file_name);
