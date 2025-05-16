@@ -1,3 +1,6 @@
+// By Producks
+// 2025/05/16
+
 #include "NesFile.hpp"
 #include <algorithm>
 #include <iterator>
@@ -33,22 +36,6 @@ static constexpr uint32_t ENEMY_POINTER_LOLO_ADDR = (0xA53F - 0x8000) + BANK_8_S
 constexpr std::array<uint8_t, 2> end_level = {0xF2, 0xFF};
 constexpr std::array<uint8_t, 2> level_error = {0xFF, 0xFF};
 
-static constexpr uint32_t Wrapper_FB70_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEDE - 0xC000);
-static constexpr std::array<uint8_t, 10> Wrapper_FB70 = {
-  0x20, 0xF4, 0xEE, // JSR Wrapper_DisableNMI
-  0x20, 0x70, 0xFB, // JSR $FB70
-  0x20, 0x00, 0xEF, // JSR Wrapper_RestoreNMI
-  0x60              // RTS
-};
-
-static constexpr uint32_t Wrapper_EBB0_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEE8 - 0xC000);
-static constexpr std::array<uint8_t, 12> Wrapper_EBB0 = {
-  0x20, 0xF4, 0xEE, // JSR Wrapper_DisableNMI
-  0x4C, 0xB0, 0xEE, // JMP bank_e_EBB0
-  0x20, 0x00, 0xEF, // JSR Wrapper_RestoreNMI
-  0x4C, 0x7D, 0xF7  // JMP CopyEnemyDataToMemory
-};
-
 static constexpr uint32_t Wrapper_DisableNMI_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEF4 - 0xC000);
 static constexpr std::array<uint8_t, 12> Wrapper_DisableNMI {
   0x08,             // PHP
@@ -69,15 +56,161 @@ static constexpr std::array<uint8_t, 7> Wrapper_RestoreNMI {
   0x4C, 0xFA, 0xEE  // JMP WrapperSetPPUCTRL
 };
 
+static constexpr uint32_t Wrapper_FCF0_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEE97 - 0xC000);
+static constexpr std::array<uint8_t, 12> Wrapper_FCF0 = {
+  0x20, 0xF4, 0xEE, // JSR Wrapper_DisableNMI
+  0x4C, 0xF0, 0xFC, // JMP $fCF0
+  0x20, 0x00, 0xEF, // JSR Wrapper_RestoreNMI
+  0x4C, 0x2E, 0xFE  // JMP $FE2E
+};
+
+static constexpr uint32_t LoadWorldCHRBanks_FCF0_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xFE22 - 0xC000);
+static constexpr std::array<uint8_t, 3> Add_Wrapper_FCF0 {
+  0x4C, 0x97, 0xEE  // JMP Wrapper_fCF0
+};
+static constexpr std::array<uint8_t, 3> Original_FCF0 {
+  0x4C, 0xF0, 0xFC  // JMP $FCF0
+};
+
+static constexpr uint32_t fCF0_JMP_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xFD20 - 0xC000);
+static constexpr std::array<uint8_t, 3> Add_Wrapper_JMP_FCF0 {
+  0x4C, 0x9D, 0xEE  // JMP Wrapper_fCF0_back
+};
+static constexpr std::array<uint8_t, 3> Original_JMP_FCF0 {
+  0x4C, 0x2E, 0xFE  // JMP $FE2E
+};
+
+static constexpr uint32_t Wrapper_EBB0_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEE8 - 0xC000);
+static constexpr std::array<uint8_t, 12> Wrapper_EBB0 = {
+  0x20, 0xF4, 0xEE, // JSR Wrapper_DisableNMI
+  0x4C, 0xB0, 0xEE, // JMP bank_e_EBB0
+  0x20, 0x00, 0xEF, // JSR Wrapper_RestoreNMI
+  0x4C, 0x7D, 0xF7  // JMP CopyEnemyDataToMemory
+};
+
+static constexpr uint32_t CopyLevelDataToMemory_EBB0_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xF76F - 0xC000);
+static constexpr std::array<uint8_t, 3> Add_Wrapper_EBB0 {
+  0x4C, 0xE8, 0xEE  // JMP Wrapper_EBB0
+};
+static constexpr std::array<uint8_t, 3> Original_EBB0 {
+  0x4C, 0xB0, 0xEE  // JMP bank_e_EBB0
+};
+
+static constexpr uint32_t bank_e_EBB0_JMP = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEDB - 0xC000);
+static constexpr std::array<uint8_t, 3> Add_Wrapper_JMP_EBB0 {
+  0x4C, 0xEE, 0xEE  // JMP Wrapper_Back_EBB0
+};
+static constexpr std::array<uint8_t, 3> Original_JMP_EBB0 {
+  0x4C, 0x7D, 0xF7  // JMP CopyEnemyDataToMemory
+};
+
+static constexpr uint32_t Wrapper_FB70_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x9C5B - 0x8000);
+static constexpr std::array<uint8_t, 10> Wrapper_FB70 = {
+  0x20, 0xF4, 0xEE, // JSR Wrapper_DisableNMI
+  0x20, 0x70, 0xFB, // JSR $FB70
+  0x20, 0x00, 0xEF, // JSR Wrapper_RestoreNMI
+  0x60              // RTS
+};
+
 static constexpr uint32_t LoadCurrentPalette_AreaOffset_FB70_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x93B4 - 0x8000);
 static constexpr uint32_t LoadCurrentArea_FB70_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x9580 - 0x8000);
 static constexpr uint32_t ReadLevelForegroundData_FB70_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x95EC - 0x8000);
 static constexpr std::array<uint8_t, 3> Add_Wrapper_FB70 {
-  0x20, 0xDE, 0xEE  // JSR Wrapper_FB70
-}; 
+  0x20, 0x5B, 0x9C  // JSR Wrapper_FB70
+};
 static constexpr std::array<uint8_t, 3> Original_FB70 {
   0x20, 0x70, 0xFB  // JSR $FB70
 };
+
+static constexpr uint32_t Wrapper_ReadWorldSpriteColor_hijack_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x9C43 - 0x8000);
+static constexpr std::array<uint8_t, 12> Wrapper_ReadWorldSpriteColor {
+  0x20, 0xF4, 0xEE, // JSR Wrapper_DisableNMI
+  0x4C, 0xF0, 0x9B, // JMP ReadWorldSpriteColor_hijack
+  0x20, 0x00, 0xEF, // JSR Wrapper_RestoreNMI
+  0x4C, 0x85, 0x93  // JMP back_ReadWorldBackgroundColor
+};
+
+static constexpr uint32_t ReadWorldSpriteColor_Hijack_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x938E - 0x8000);
+static constexpr std::array<uint8_t, 3> Add_Wrapper_ReadWorldSpriteColor {
+  0x4C, 0x43, 0x9C  // JMP Wrapper_ReadWorldSpriteColor_hijack
+};
+static constexpr std::array<uint8_t, 3> Original_ReadWorldSpriteColor {
+  0x4C, 0xF0, 0x9B  // JMP ReadWorldSpriteColor_hijack
+};
+
+static constexpr uint32_t ReadWorldSpriteColor_hijack_JMP_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x9C40 - 0x8000);
+static constexpr std::array<uint8_t, 3> Add_Wrapper_JMP_ReadWorldSpriteColor_hijack {
+  0x4C, 0x49, 0x9C  // JMP Wrapper_ReadWorldSpriteColor_hijack_back
+};
+static constexpr std::array<uint8_t, 3> Original_JMP_ReadWorldSpriteColor_hijack {
+  0x4C, 0x85, 0x93  // JMP back_ReadWorldBackgroundColor
+};
+
+static constexpr uint32_t Wrapper_ReadWorldBackgroundColor_hijack_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x9C4F - 0x8000);
+static constexpr std::array<uint8_t, 12> Wrapper_ReadWorldBackgroundColor {
+  0x20, 0xF4, 0xEE, // JSR Wrapper_DisableNMI
+  0x4C, 0xF0, 0x9A, // JMP ReadWorldBackgroundColor_hijack
+  0x20, 0x00, 0xEF, // JSR Wrapper_RestoreNMI
+  0x4C, 0x85, 0x93  // JMP back_ReadWorldBackgroundColor
+};
+
+static constexpr uint32_t ReadWorldBackgroundColor_Hijack_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x9374 - 0x8000);
+static constexpr std::array<uint8_t, 3> Add_Wrapper_ReadWorldBackgroundColor {
+  0x4C, 0x4F, 0x9C  // JMP Wrapper_ReadWorldBackgroundColor_hijack
+};
+static constexpr std::array<uint8_t, 3> Original_ReadWorldBackgroundColor {
+  0x4C, 0xF0, 0x9A  // JMP ReadWorldBackgroundColor_hijack
+};
+
+static constexpr uint32_t ReadWorldBackgroundColor_hijack_JMP_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x9B42 - 0x8000);
+static constexpr std::array<uint8_t, 3> Add_Wrapper_JMP_ReadWorldBackgroundColor_hijack {
+  0x4C, 0x55, 0x9C  // JMP Wrapper_ReadWorldBackgroundColor_hijack_back
+};
+static constexpr std::array<uint8_t, 3> Original_JMP_ReadWorldBackgroundColor_hijack {
+  0x4C, 0x85, 0x93  // JMP back_ReadWorldBackgroundColor
+};
+
+static constexpr uint32_t Wrapper_EF10_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEA3 - 0xC000);
+static constexpr std::array<uint8_t, 12> Wrapper_EF10 {
+  0x20, 0xF4, 0xEE, // JSR Wrapper_DisableNMI
+  0x4C, 0x10, 0xEF, // JMP $EF10
+  0x20, 0x00, 0xEF, // JSR Wrapper_RestoreNMI
+  0x4C, 0xE6, 0xF7  // JMP $F7E6
+};
+
+static constexpr uint32_t CopyJarDataToMemory_EF10_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xF7D6 - 0xC000);
+static constexpr std::array<uint8_t, 3> Add_Wrapper_CopyJarDataToMemory {
+  0x4C, 0xA3, 0xEE  // JMP Wrapper_EF10
+};
+static constexpr std::array<uint8_t, 3> Original_CopyJarDataToMemory {
+  0x4C, 0x10, 0xEF  // JMP $EF10
+};
+
+static constexpr uint32_t EF10_JMP_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEF39 - 0xC000);
+static constexpr std::array<uint8_t, 3> Add_Wrapper_JMP_EF10 {
+  0x4C, 0xA9, 0xEE  // JMP Wrapper_EF10_back
+};
+static constexpr std::array<uint8_t, 3> Original_JMP_EF10 {
+  0x4C, 0xE6, 0xF7  // JMP $F7E6
+};
+
+static constexpr uint32_t Wrapper_EF60_addr = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEDE - 0xC000);
+static constexpr std::array<uint8_t, 10> Wrapper_EF60 {
+  0x20, 0xF4, 0xEE, // JSR Wrapper_DisableNMI
+  0x20, 0x60, 0xEF, // JSR $EF60
+  0x20, 0x00, 0xEF, // JSR Wrapper_RestoreNMI
+  0x60              // RTS
+};
+
+static constexpr uint32_t LoadWorldCHRBanks_JMP_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x99B4 - 0x8000);
+static constexpr std::array<uint8_t, 3> Add_Wrapper_EF60{
+  0x20, 0xDE, 0xEE  // JSR Wrapper_EF60
+};
+static constexpr std::array<uint8_t, 3> Original_EF60 {
+  0x20, 0x60, 0xEF  // JSR $EF60
+};
+
+static constexpr uint32_t calculator = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEA0 - 0xC000);
 
 uint8_t NesFile::override_subroutine_call(const std::array<uint8_t, 3> &wrapper, const std::array<uint8_t, 3> &original, const uint32_t addr) {
   if (std::equal(wrapper.begin(), wrapper.end(), rom_data_.begin() + addr))
@@ -105,20 +238,42 @@ uint8_t NesFile::subroutine_injection(const uint8_t *begin, const uint8_t *end, 
 
 uint8_t NesFile::apply_subroutine_fixes(void) {
   uint8_t result = 0;
-  result += subroutine_injection(Wrapper_FB70.begin(), Wrapper_FB70.end(), Wrapper_FB70.size(), Wrapper_FB70_addr);
-  result += subroutine_injection(Wrapper_EBB0.begin(), Wrapper_EBB0.end(), Wrapper_EBB0.size(), Wrapper_EBB0_addr);
   result += subroutine_injection(Wrapper_DisableNMI.begin(), Wrapper_DisableNMI.end(), Wrapper_DisableNMI.size(), Wrapper_DisableNMI_addr);
   result += subroutine_injection(Wrapper_RestoreNMI.begin(), Wrapper_RestoreNMI.end(), Wrapper_RestoreNMI.size(), Wrapper_RestoreNMI_addr);
+  
+  result += subroutine_injection(Wrapper_FB70.begin(), Wrapper_FB70.end(), Wrapper_FB70.size(), Wrapper_FB70_addr);
   result += override_subroutine_call(Add_Wrapper_FB70, Original_FB70, ReadLevelForegroundData_FB70_addr);
   result += override_subroutine_call(Add_Wrapper_FB70, Original_FB70, LoadCurrentArea_FB70_addr);
   result += override_subroutine_call(Add_Wrapper_FB70, Original_FB70, LoadCurrentPalette_AreaOffset_FB70_addr);
+  
+  result += subroutine_injection(Wrapper_EBB0.begin(), Wrapper_EBB0.end(), Wrapper_EBB0.size(), Wrapper_EBB0_addr);
+  result += override_subroutine_call(Add_Wrapper_EBB0, Original_EBB0, CopyLevelDataToMemory_EBB0_addr);
+  result += override_subroutine_call(Add_Wrapper_JMP_EBB0, Original_JMP_EBB0, bank_e_EBB0_JMP);
+  
+  result += subroutine_injection(Wrapper_FCF0.begin(), Wrapper_FCF0.end(), Wrapper_FCF0.size(), Wrapper_FCF0_addr);
+  result += override_subroutine_call(Add_Wrapper_FCF0, Original_FCF0, LoadWorldCHRBanks_FCF0_addr);
+  result += override_subroutine_call(Add_Wrapper_JMP_FCF0, Original_JMP_FCF0, fCF0_JMP_addr);
+
+  result += subroutine_injection(Wrapper_ReadWorldSpriteColor.begin(), Wrapper_ReadWorldSpriteColor.end(), Wrapper_ReadWorldSpriteColor.size(), Wrapper_ReadWorldSpriteColor_hijack_addr);
+  result += override_subroutine_call(Add_Wrapper_ReadWorldSpriteColor, Original_ReadWorldSpriteColor, ReadWorldSpriteColor_Hijack_addr);
+  result += override_subroutine_call(Add_Wrapper_JMP_ReadWorldSpriteColor_hijack, Original_JMP_ReadWorldSpriteColor_hijack, ReadWorldSpriteColor_hijack_JMP_addr);
+
+  result += subroutine_injection(Wrapper_ReadWorldBackgroundColor.begin(), Wrapper_ReadWorldBackgroundColor.end(), Wrapper_ReadWorldBackgroundColor.size(), Wrapper_ReadWorldBackgroundColor_hijack_addr);
+  result += override_subroutine_call(Add_Wrapper_ReadWorldBackgroundColor, Original_ReadWorldBackgroundColor, ReadWorldBackgroundColor_Hijack_addr);
+  result += override_subroutine_call(Add_Wrapper_JMP_ReadWorldBackgroundColor_hijack, Original_JMP_ReadWorldBackgroundColor_hijack, ReadWorldBackgroundColor_hijack_JMP_addr);
+
+  result += subroutine_injection(Wrapper_EF10.begin(), Wrapper_EF10.end(), Wrapper_EF10.size(), Wrapper_EF10_addr);
+  result += override_subroutine_call(Add_Wrapper_CopyJarDataToMemory, Original_CopyJarDataToMemory, CopyJarDataToMemory_EF10_addr);
+  result += override_subroutine_call(Add_Wrapper_JMP_EF10, Original_JMP_EF10, EF10_JMP_addr);
+
+  result += subroutine_injection(Wrapper_EF60.begin(), Wrapper_EF60.end(), Wrapper_EF60.size(), Wrapper_EF60_addr);
+  result += override_subroutine_call(Add_Wrapper_EF60, Original_EF60, LoadWorldCHRBanks_JMP_addr);
   if (result) {
     std::cerr << "Use this tool again without the patch that modify code at the address location" << std::endl;
     return 1;
   }
   return 0;
 }
-
 
 void NesFile::fix_level_issues(const uint8_t starting_level, const uint8_t ending_level) {
   std::vector<uint8_t>::iterator out_of_bound_addr = levels_[ending_level].area[0].level_data_address + rom_data_.begin();
@@ -129,12 +284,12 @@ void NesFile::fix_level_issues(const uint8_t starting_level, const uint8_t endin
         ? levels_[current_level].area[current_area + 1].level_data_address + rom_data_.begin()
           : levels_[current_level + 1].area[0].level_data_address + rom_data_.begin();
       if (end_addr == out_of_bound_addr) {
-        std::cout << "OOB " << std::hex << (int)current_level / 3 + 1 << "-" << (int)current_level % 3 + 1 << " area " << (int)current_area << std::endl;
-        end_addr = std::search(beg_addr, rom_data_.end(), end_level.begin(), end_level.end()) + 2; // High chance this breaks, TODO add bounds checking?
+        // std::cout << "OOB " << std::hex << (int)current_level / 3 + 1 << "-" << (int)current_level % 3 + 1 << " area " << (int)current_area << std::endl;
+        end_addr = std::search(beg_addr, rom_data_.end(), end_level.begin(), end_level.end()) + 2; // High chance this breaks, Maybeeee add bounds checking?
       }
       std::vector<uint8_t>::iterator it = std::search(beg_addr, end_addr, level_error.begin(), level_error.end());
       if (it != end_addr) {
-        std::cout << "Fixed level format error found in " << std::hex << (int)current_level / 3 + 1 << "-" << (int)current_level % 3 + 1 << " area " << (int)current_area << std::endl;
+        // std::cout << "Fixed level format error found in " << std::hex << (int)current_level / 3 + 1 << "-" << (int)current_level % 3 + 1 << " area " << (int)current_area << std::endl;
         std::rotate(it, it + 2, end_addr);
         level_fix_count_++;
       }
@@ -244,9 +399,9 @@ void NesFile::print_summary(void) const {
   std::cout << "~ Summary ~\n";
   std::cout << "Color fixes applied: " << std::dec << color_fix_count_ << "\n";
   std::cout << "Sprite level data fixes applied: " << std::dec << sprite_fix_count_ << "\n";
-  std::cout << "Level data fixes applied: " << std::dec << level_fix_count_ << "\n";
   std::cout << "Old sprite level data size: " << std::dec << original_sprice_space_ << "\n";
   std::cout << "New sprite level data size: " << std::dec << new_sprite_space_ << "\n";
+  std::cout << "Level data fixes applied: " << std::dec << level_fix_count_ << "\n";
   std::cout << "Code injection: " << std::dec << code_injection_count_ << std::endl;
 }
 

@@ -1,16 +1,18 @@
+// By Producks
+// 2025/05/16
+
 #include "FileValidator.hpp"
 #include "Io.hpp"
 #include <iostream>
 #include <filesystem>
 #include <fstream>
 
-
 bool FileValidator::validate_out_file(std::string &out_file_name) {
   if (!out_file_name.ends_with(".nes"))
     out_file_name += ".nes";
   if (std::filesystem::exists(out_file_name)) {
     std::string confirmation;
-    Io::prompt_user(confirmation, "Warning: This file exists. To overwrite, type 'y' or 'Y' and press Enter:");
+    Io::prompt_user(confirmation, "\nWarning: This file exists. To overwrite, type 'y' or 'Y' and press enter:");
     if (confirmation != "y" && confirmation != "Y") {
       std::cerr << "Relaunch the program with another file name" << std::endl;
       Io::press_enter_to_continue();

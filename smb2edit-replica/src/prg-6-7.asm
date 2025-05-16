@@ -5706,7 +5706,11 @@ ReadLevelForegroundData_RegularObject_hijack_one:
 random_routine_01:
   CPY #$00
   BNE +
+IFDEF SMB2FIX
+  JSR Wrapper_EF60
+ELSE
   JSR $EF60 ; TODO ADD LATER
+ENDIF
 +
   RTS
 
@@ -5729,6 +5733,7 @@ ReadLevelBackgroundData_ProcessObject_AdvanceByte_hijack:
   JSR random_routine_01
   JMP ReadLevelBackgroundData_Object
 
+; dealth with
 .pad $9AF0, $FF
 ReadWorldBackgroundColor_hijack:
   SEI
@@ -5852,4 +5857,12 @@ Wrapper_ReadWorldBackgroundColor_hijack:
 Wrapper_ReadWorldBackgroundColor_hijack_back:
   JSR Wrapper_RestoreNMI
   JMP back_ReadWorldBackgroundColor
+ENDIF
+
+IFDEF SMB2FIX
+Wrapper_FB70:
+  JSR Wrapper_DisableNMI
+  JSR $FB70
+  JSR Wrapper_RestoreNMI
+  RTS
 ENDIF

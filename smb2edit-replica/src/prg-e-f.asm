@@ -2962,8 +2962,26 @@ dump_enemy_data:
   STA $7300
   RTS
 
+IFDEF SMB2FIX
+Wrapper_fCF0:
+  JSR Wrapper_DisableNMI
+  JMP $fCF0
+Wrapper_fCF0_back:
+ JSR Wrapper_RestoreNMI
+ JMP $FE2E
+
+Wrapper_EF10:
+  JSR Wrapper_DisableNMI
+  JMP $EF10
+Wrapper_EF10_back:
+  JSR Wrapper_RestoreNMI
+  JMP $F7E6
+
+  .db $ff
+ELSE
 .db $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff
 .db $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff
+ENDIF
 
 ; dealt with
 bank_e_EBB0:
@@ -2998,12 +3016,14 @@ ELSE
 ENDIF
 
 IFDEF SMB2FIX
-Wrapper_FB70:
+Wrapper_EF60:
   JSR Wrapper_DisableNMI
-  JSR $FB70
+  JSR $EF60
   JSR Wrapper_RestoreNMI
   RTS
+ENDIF
 
+IFDEF SMB2FIX
 Wrapper_EBB0:
   JSR Wrapper_DisableNMI
   JMP bank_e_EBB0
@@ -3042,8 +3062,8 @@ ENDIF
   STA MMC3_BankData
   LDY #$00
   STY TransitionType_Door
-  LDA (TransitionType_Rocket),Y
-  STA (TransitionType_Door),Y
+  LDA (TransitionType_Rocket), Y
+  STA (TransitionType_Door), Y
   INY
   DEX
   BNE $EF26
@@ -3053,8 +3073,11 @@ random_label_08:
   LDA #$08
   STA MMC3_BankData
   CLI
+IFDEF SMB2FIX
+  JMP Wrapper_EF10_back
+ELSE
   JMP $F7E6
-
+ENDIF
 .db $ff, $ff, $ff, $ff
 
   LDA #$00
@@ -3073,7 +3096,7 @@ random_label_10:
 
 .db $ff, $ff, $ff, $ff, $ff
 
-; irqs get disable but never get restored?????????
+
 random_label_11:
   SEI
   TYA
@@ -3100,13 +3123,13 @@ random_label_11:
   LDA #$09
   STA MMC3_BankData
   LDY $0531
-  LDA MMC3_BankSelect,Y
+  LDA MMC3_BankSelect, Y
   CLC
   ADC $0532
   TAY
-  LDA $8015,Y
+  LDA $8015, Y
   STA TransitionType_Rocket
-  LDA $80E7,Y
+  LDA $80E7, Y
   STA SpriteAnimation_Jumping
   INC SpriteAnimation_Jumping
   LDX #$FF
@@ -3140,7 +3163,7 @@ random_label_12:
   STA MMC3_BankData
   JSR $95D4
 
-; is this ever called????
+; get called with an rts later, weird
   PLA
   STA SpriteAnimation_Jumping
   PLA
@@ -5629,7 +5652,11 @@ CopyJarDataToMemory:
 	LDA #>RawJarData
 	STA byte_RAM_2
 IFDEF SMBEDIT
+IFDEF SMB2FIX
+  JMP Wrapper_EF10
+ELSE
   JMP $EF10
+ENDIF
   .db $01
 ELSE
 	LDY #<RawJarData
@@ -6160,15 +6187,6 @@ loc_BANKF_FBF8:
 IFDEF SMB2FIX
   JMP Wrapper_fCF0_back
 ELSE
-  JMP $FE2E
-ENDIF
-
-IFDEF SMB2FIX
-Wrapper_fCF0:
-  JSR Wrapper_DisableNMI
-  JMP $fCF0
-Wrapper_fCF0_back:
-  JSR Wrapper_RestoreNMI
   JMP $FE2E
 ENDIF
 
