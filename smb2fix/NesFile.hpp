@@ -24,7 +24,7 @@ public:
   ~NesFile() = default;
   void create_copy(std::ifstream &rom);
   uint8_t apply_fixes(void);
-  void save_file(std::string &file_name);
+  bool save_file(std::string &file_name);
   void print_summary(void) const;
 
   private:

@@ -389,14 +389,17 @@ void NesFile::create_copy(std::ifstream &rom) {
     std::istream_iterator<uint8_t>(), std::back_inserter(rom_data_));
 }
 
-void NesFile::save_file(std::string &file_name) {
+bool NesFile::save_file(std::string &file_name) {
   std::ofstream dst(file_name, std::ios::binary);
+  if (dst.fail())
+    return false;
   dst.write(reinterpret_cast<const char *>(rom_data_.data()),
             static_cast<std::streamsize>(rom_data_.size() * sizeof(uint8_t)));
+  return true;
 }
 
 void NesFile::print_summary(void) const {
-  std::cout << "~ Summary ~\n";
+  std::cout << "\n~ Summary ~\n";
   std::cout << "Color fixes applied: " << std::dec << color_fix_count_ << "\n";
   std::cout << "Sprite level data fixes applied: " << std::dec << sprite_fix_count_ << "\n";
   std::cout << "Old sprite level data size: " << std::dec << original_sprice_space_ << "\n";

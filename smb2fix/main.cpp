@@ -1,4 +1,5 @@
-// By Producks 2025/05/16
+// By Producks
+// 2025/05/16
 
 #include <iostream>
 #include <fstream>
@@ -28,10 +29,17 @@ int main(int argc, char **argv) {
     return 1;
   }
   nes_file.print_summary();
-  std::string save_file_name ("result");
+  std::string save_file_name;
+  Io::prompt_user(save_file_name, "\nEnter a name for the modified rom: ");
   if (!FileValidator::validate_out_file(save_file_name))
     return 1;
-  nes_file.save_file(save_file_name);
+  if (!nes_file.save_file(save_file_name)) {
+    rom.close();
+    Io::print_error_message("Couldn't save the new file");
+    return 1;
+  }
+  std::cout << "Success!" << std::endl;
+  Io::press_enter_to_continue();
   rom.close();
   return 0;
 }

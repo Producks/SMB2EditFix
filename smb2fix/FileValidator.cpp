@@ -8,6 +8,8 @@
 #include <fstream>
 
 bool FileValidator::validate_out_file(std::string &out_file_name) {
+  if (std::cin.fail() || out_file_name.empty())
+    return Io::print_error_message("With the file name! It can't be empty!");
   if (!out_file_name.ends_with(".nes"))
     out_file_name += ".nes";
   if (std::filesystem::exists(out_file_name)) {
