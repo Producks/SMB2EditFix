@@ -48,14 +48,7 @@ The NES has multiple black colors, but not all of them should be used.
 SMB2edit changes all black colors to 0x0D. This is an issue for people playing those hacks on console; it can cause flickering and crazy visual effects. If you want to read more about it, you can find more info about it [here](https://www.nesdev.org/wiki/Color_$0D_games)
 
 ### Sprite level data is looking for his friend 0x01
-Sprite data is now properly formatted by adding the missing `$01`, and it will also get rid of unused data.
-Since the program rebuilds the sprite data every time, the sprite level data fix count should always be 600. However, the size between old and new should be the same if nothing has changed.
-
-#### Why does this matter?
-Sprite level data is split into pages for an area. Each page will contain the enemy data for that page; if it's empty, it will just be `$01`. You have to do this for the number of pages in the area **+1**. SMB2edit doesn't add the **+1**, and it ends up resulting in a bug where sprites from the next area clip into the end of the page in the current area.
-
-#### How is it saving space?
-There is dummy data that is never used or read between the areas. Even the vanilla game does this in some levels. This data doesn't do anything, and I just update the pointer to what is used. Don't worry, it's not deleting anything important; it's just formatting things efficiently.
+There an issue with jar in the 1.0 version. A fix will come later, for now the sprite stuff fix doesn't get applied.
 
 ### Level data gone wild with 0xFF
 Fixes some of the levels that had a double terminating `0xFF` early.
