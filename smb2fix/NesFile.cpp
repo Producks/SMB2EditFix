@@ -401,9 +401,9 @@ bool NesFile::save_file(std::string &file_name) {
 void NesFile::print_summary(void) const {
   std::cout << "\n~ Summary ~\n";
   std::cout << "Color fixes applied: " << std::dec << color_fix_count_ << "\n";
-  std::cout << "Sprite level data fixes applied: " << std::dec << sprite_fix_count_ << "\n";
-  std::cout << "Old sprite level data size: " << std::dec << original_sprice_space_ << "\n";
-  std::cout << "New sprite level data size: " << std::dec << new_sprite_space_ << "\n";
+  // std::cout << "Sprite level data fixes applied: " << std::dec << sprite_fix_count_ << "\n";
+  // std::cout << "Old sprite level data size: " << std::dec << original_sprice_space_ << "\n";
+  // std::cout << "New sprite level data size: " << std::dec << new_sprite_space_ << "\n";
   std::cout << "Level data fixes applied: " << std::dec << level_fix_count_ << "\n";
   std::cout << "Code injection: " << std::dec << code_injection_count_ << std::endl;
 }
@@ -448,7 +448,7 @@ uint8_t NesFile::apply_fixes(void) {
     return 1;
   extract_level_content();
 	apply_color_fix();
-  apply_sprite_data_fix();
+  // apply_sprite_data_fix();
   apply_level_data_fix();
   return 0;
 }
