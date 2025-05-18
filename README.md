@@ -1,6 +1,6 @@
 # SMB2EditFix
 Project commissioned by DearTruly for 25 hours.  
-The executables for Linux and Windows can be found [here]() in the release section.  
+The executables for Linux and Windows can be found [here](https://github.com/Producks/SMB2EditFix/releases) in the release section.  
 
 ## What is this?
 This project provides a program to fix some of the issues SMB2Edit introduces and provides a complete replica of version 0.3.0 applied to the ROM in the smb2 disassembly format. It was developed for version 0.30 of SMB2edit but should also work on version 0.3.1.
@@ -52,7 +52,7 @@ Sprite data is now properly formatted by adding the missing `$01`, and it will a
 Since the program rebuilds the sprite data every time, the sprite level data fix count should always be 600. However, the size between old and new should be the same if nothing has changed.
 
 #### Why does this matter?
-Sprite level data is split into pages for an area. Each page will contain the enemy data for that page; if it's empty, it will just be `$01`. You have to do this for the number of pages in the area **+1**. SMB2edit doesn't add the **+1**, and it ends up resulting in a bug where sprites from the next area clip into the end of the page in the current area. Here's an example picture of the bug []()
+Sprite level data is split into pages for an area. Each page will contain the enemy data for that page; if it's empty, it will just be `$01`. You have to do this for the number of pages in the area **+1**. SMB2edit doesn't add the **+1**, and it ends up resulting in a bug where sprites from the next area clip into the end of the page in the current area.
 
 #### How is it saving space?
 There is dummy data that is never used or read between the areas. Even the vanilla game does this in some levels. This data doesn't do anything, and I just update the pointer to what is used. Don't worry, it's not deleting anything important; it's just formatting things efficiently.
