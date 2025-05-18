@@ -48,7 +48,7 @@ The NES has multiple black colors, but not all of them should be used.
 SMB2edit changes all black colors to 0x0D. This is an issue for people playing those hacks on console; it can cause flickering and crazy visual effects. If you want to read more about it, you can find more info about it [here](https://www.nesdev.org/wiki/Color_$0D_games)
 
 ### Sprite level data is looking for his friend 0x01
-There an issue with jar in the 1.0 version. A fix will come later, for now the sprite stuff fix doesn't get applied.
+Sprite fix isn't getting applied yet, there was an issue so it's disable for now until an update.
 
 ### Level data gone wild with 0xFF
 Fixes some of the levels that had a double terminating `0xFF` early.
