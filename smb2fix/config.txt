@@ -1,0 +1,16 @@
+# SMB2EditFix config file
+# 1 = Enable
+# 0 = False
+# "" is for a file name
+
+# Change all colors from 0x0D to 0x0F
+Color fix = 1
+
+# Fix any levels with the random double 0xFF in the middle of the level data. Only found in w6 usually
+Level fix = 1
+
+# Apply wrappers to subroutines with SEI CLI. Fixes levels that load incorectly in world 6 and 7
+Code injection = 1
+
+# Enabling this will always overwrite the file if it exist
+Always overwrite = 0

@@ -210,6 +210,15 @@ static constexpr std::array<uint8_t, 3> Original_EF60 {
   0x20, 0x60, 0xEF  // JSR $EF60
 };
 
+static constexpr uint32_t SpriteColorFix_CPY_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x9C21 - 0x8000);
+static constexpr std::array<uint8_t, 2> Fixed_SpriteColorFix_CPY{
+  0xC0, 0x0C        // CPY #$0C
+};
+
+static constexpr std::array<uint8_t, 2> Original_SpriteColorFix_CPY {
+  0xC0, 0x0B        // CPY #$0B
+};
+
 static constexpr uint32_t calculator = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEA0 - 0xC000);
 
 uint8_t NesFile::override_subroutine_call(const std::array<uint8_t, 3> &wrapper, const std::array<uint8_t, 3> &original, const uint32_t addr) {
@@ -450,5 +459,7 @@ uint8_t NesFile::apply_fixes(void) {
 	apply_color_fix();
   // apply_sprite_data_fix();
   apply_level_data_fix();
+  // subroutine_injection();
+  rom_data_[SpriteColorFix_CPY_addr + 1] = 0x0C; 
   return 0;
 }

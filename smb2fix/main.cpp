@@ -8,6 +8,8 @@
 #include "NesFile.hpp"
 #include "Io.hpp"
 #include "FileValidator.hpp"
+#include "ConfigParser.hpp"
+#include "Config.h"
 
 static void print_intro(void) { std::cout << "SMB2EditFix by Producks version 1.0\nSource code: https://github.com/Producks/SMB2EditFix\n" << std::endl; }
 
@@ -15,8 +17,11 @@ int main(int argc, char **argv) {
   NesFile nes_file;
   std::ifstream rom;
   std::string file_name;
+  Config config;
 
   print_intro();
+  ConfigParser::ParseConfigFile(config);
+  // return 0;
   if (argc == 1)
     Io::prompt_user(file_name, "Enter the rom name: ");
   else
