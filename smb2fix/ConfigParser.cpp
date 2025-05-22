@@ -8,7 +8,6 @@
 #include <map>
 #include <functional>
 
-
 static void set_bool_config(bool &config, const std::string &value) { config = value == "1"; }
 
 static void set_string_config(std::string &result, bool &set, const std::string &value) {
@@ -30,11 +29,16 @@ static void set_string_config(std::string &result, bool &set, const std::string 
   }
 }
 
-static std::map<const std::string, std::function<void(Config&, const std::string&)>> func_map { 
+static std::map<const std::string, std::function<void(Config&, const std::string&)>> func_map {
+  // Rom modifications
   {"Colorfix", [](Config &config, const std::string &value) {set_bool_config(config.color_fix, value);}},
   {"Spritecolorfix", [](Config &config, const std::string &value) {set_bool_config(config.sprite_color_fix, value);}},
   {"Levelfix", [](Config &config, const std::string &value) {set_bool_config(config.level_fix, value);}},
-  {"Codeinjection", [](Config &config, const std::string &value) {set_bool_config(config.code_injection, value);}},
+  {"Spriteleveldatafix", [](Config &config, const std::string &value) {set_bool_config(config.sprite_data_fix, value);}},
+  {"Wrappersinjection", [](Config &config, const std::string &value) {set_bool_config(config.sei_wrapper, value);}},
+  {"CHRA12inversion", [](Config &config, const std::string &value) {set_bool_config(config.chr_a12_inversion_fix, value);}},
+
+  // Program options
   {"Alwaysoverwrite", [](Config &config, const std::string &value) {set_bool_config(config.overwrite_file, value);}},
   {"Samefileoutput", [](Config &config, const std::string &value) {set_bool_config(config.same_file_out, value);}},
   {"Skipenteronsuccess", [](Config &config, const std::string &value) {set_bool_config(config.skip_enter_on_success, value);}},
@@ -76,4 +80,5 @@ void ConfigParser::ParseConfigFile(Config &config) {
     if (func_map.find(splice.first) != func_map.end())
       func_map[splice.first](config, splice.second);
   }
+  config_file.close();
 }

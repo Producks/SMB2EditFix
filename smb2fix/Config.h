@@ -5,9 +5,11 @@
 
 struct Config {
   bool color_fix = true;
-  bool level_fix = true;
   bool sprite_color_fix = true;
-  bool code_injection = true;
+  bool level_fix = true;
+  bool sprite_data_fix = true;
+  bool sei_wrapper = true;
+  bool chr_a12_inversion_fix = true;
 
 
   bool overwrite_file = false;

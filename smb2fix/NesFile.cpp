@@ -2,6 +2,7 @@
 // 2025/05/16
 
 #include "NesFile.hpp"
+#include "Config.h"
 #include <algorithm>
 #include <iterator>
 #include <iostream>
@@ -221,6 +222,18 @@ static constexpr std::array<uint8_t, 2> Original_SpriteColorFix_CPY {
 
 static constexpr uint32_t calculator = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEA0 - 0xC000);
 
+uint8_t NesFile::code_injection(const uint8_t *code_begin, const uint8_t *code_end, const uint8_t *original_code_begin, const uint8_t *original_code_end, uint32_t addr) {
+  if (std::equal(code_begin, code_end, rom_data_.begin() + addr))
+    return 0;
+  if (std::equal(original_code_begin, original_code_end, rom_data_.begin() + addr)) {
+    std::copy(code_begin, code_end, rom_data_.begin() + addr);
+    code_injection_count_ += code_end - code_begin;
+    return 0;
+  }
+  std::cerr << "Invalid code when trying to override the subroutine call at address: 0x" << std::hex << addr << std::endl;
+  return 1;
+}
+
 uint8_t NesFile::override_subroutine_call(const std::array<uint8_t, 3> &wrapper, const std::array<uint8_t, 3> &original, const uint32_t addr) {
   if (std::equal(wrapper.begin(), wrapper.end(), rom_data_.begin() + addr))
     return 0;
@@ -245,7 +258,7 @@ uint8_t NesFile::subroutine_injection(const uint8_t *begin, const uint8_t *end, 
   return 0;
 }
 
-uint8_t NesFile::apply_subroutine_fixes(void) {
+uint8_t NesFile::apply_sei_wrappers(void) {
   uint8_t result = 0;
   result += subroutine_injection(Wrapper_DisableNMI.begin(), Wrapper_DisableNMI.end(), Wrapper_DisableNMI.size(), Wrapper_DisableNMI_addr);
   result += subroutine_injection(Wrapper_RestoreNMI.begin(), Wrapper_RestoreNMI.end(), Wrapper_RestoreNMI.size(), Wrapper_RestoreNMI_addr);
@@ -278,10 +291,16 @@ uint8_t NesFile::apply_subroutine_fixes(void) {
   result += subroutine_injection(Wrapper_EF60.begin(), Wrapper_EF60.end(), Wrapper_EF60.size(), Wrapper_EF60_addr);
   result += override_subroutine_call(Add_Wrapper_EF60, Original_EF60, LoadWorldCHRBanks_JMP_addr);
   if (result) {
-    std::cerr << "Use this tool again without the patch that modify code at the address location" << std::endl;
+    std::cerr << "With SEI wrappers! Use this tool again without the patch that modify code at the address location" << std::endl;
     return 1;
   }
   return 0;
+}
+
+uint8_t NesFile::apply_sprite_color_fix(void) {
+  return code_injection(
+    Fixed_SpriteColorFix_CPY.begin(), Fixed_SpriteColorFix_CPY.end(),
+      Original_SpriteColorFix_CPY.begin(), Original_SpriteColorFix_CPY.end(), SpriteColorFix_CPY_addr);
 }
 
 void NesFile::fix_level_issues(const uint8_t starting_level, const uint8_t ending_level) {
@@ -452,14 +471,18 @@ void NesFile::extract_enemy_data(Level &level, uint32_t current_level, uint8_t a
     ((rom_data_[level.enemy_ptr_table_hi + area_index] << 8) + (rom_data_[level.enemy_ptr_table_lo + area_index]) - 0x8000) + BANK_A_STARTING_ADDR;
 }
 
-uint8_t NesFile::apply_fixes(void) {
-  if (apply_subroutine_fixes())
-    return 1;
+uint8_t NesFile::apply_fixes(const Config &config) {
+  if (config.sei_wrapper) {
+    if (apply_sei_wrappers())
+      return 1;
+  }
   extract_level_content();
-	apply_color_fix();
+  if (config.color_fix)
+	  apply_color_fix();
   // apply_sprite_data_fix();
-  apply_level_data_fix();
-  // subroutine_injection();
-  rom_data_[SpriteColorFix_CPY_addr + 1] = 0x0C; 
+  if (config.level_fix)
+    apply_level_data_fix();
+  if (config.sprite_color_fix)
+    apply_sprite_color_fix();
   return 0;
 }

@@ -13,8 +13,14 @@ Sprite color fix = 1
 # Fixes any levels with the random double 0xFF in the middle of the level data. This fixes level layout having a random cutoff in world 6
 Level fix = 1
 
+# Fixes sprite level data that is missing the 0x00. This fix the bug where sprites would spawn from the next area in the last screen
+Sprite level data fix = 0
+
 # Apply wrappers to subroutines with SEI CLI. This fixes levels that would load incorrectly in world 6-7
-Code injection = 1
+Wrappers injection = 1
+
+# Fixes a bug where the bank switching was done incorrectly. This fixes the garbage graphics during a transition when exiting a jar or the subspace
+CHR A12 inversion = 0
 
 
 # ~ Program options ~

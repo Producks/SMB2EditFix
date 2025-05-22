@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <stdint.h>
+#include "Config.h"
 
 struct Area {
   uint8_t  page_count;
@@ -25,14 +26,15 @@ public:
   NesFile() = default;
   ~NesFile() = default;
   void create_copy(std::ifstream &rom);
-  uint8_t apply_fixes(void);
+  uint8_t apply_fixes(const Config &config);
   bool save_file(std::string &file_name);
   void print_summary(void) const;
 
-  private:
+private:
   uint8_t subroutine_injection(const uint8_t *begin, const uint8_t *end, const uint8_t size, const uint32_t addr);
   uint8_t override_subroutine_call(const std::array<uint8_t, 3> &wrapper, const std::array<uint8_t, 3> &original, const uint32_t addr);
-  uint8_t apply_subroutine_fixes(void);
+  uint8_t apply_sei_wrappers(void);
+  uint8_t apply_sprite_color_fix(void);
   uint8_t get_first_level_page_length(void) const;
   void fix_level_issues(const uint8_t starting_level, const uint8_t ending_level);
   void extract_level_content(void);
@@ -42,6 +44,7 @@ public:
   void fix_colors(uint32_t starting_adr, uint32_t length);
   void extract_area_data(Level &level, uint32_t current_level, uint8_t area_index);
   void extract_enemy_data(Level &level, uint32_t current_level, uint8_t area_index);
+  uint8_t code_injection(const uint8_t *code_begin, const uint8_t *code_end, const uint8_t *original_code_begin, const uint8_t *original_code_end, uint32_t addr);
   uint32_t traverse_sprite_data(uint32_t current_addr, uint8_t current_level, uint8_t current_area);
   std::vector<uint8_t> rom_data_;
   std::vector<Level> levels_;
