@@ -1,16 +1,32 @@
 # SMB2EditFix config file
-# 1 = Enable
-# 0 = False
-# "" is for a file name
+# 1 = Enable/On
+# 0 = Disable/Off
+
+# ~ Rom modifications ~
 
 # Change all colors from 0x0D to 0x0F
 Color fix = 1
 
-# Fix any levels with the random double 0xFF in the middle of the level data. Only found in w6 usually
+# Fixes a bug that made it so the last color of the sprites was loaded incorrectly
+Sprite color fix = 1
+
+# Fixes any levels with the random double 0xFF in the middle of the level data. This fixes level layout having a random cutoff in world 6
 Level fix = 1
 
-# Apply wrappers to subroutines with SEI CLI. Fixes levels that load incorectly in world 6 and 7
+# Apply wrappers to subroutines with SEI CLI. This fixes levels that would load incorrectly in world 6-7
 Code injection = 1
 
-# Enabling this will always overwrite the file if it exist
+
+# ~ Program options ~
+
+# Overwrite the file if it already exists without any warnings
 Always overwrite = 0
+
+# The program will always save the output file with the name you specify in Save file name
+Same file output = 0
+
+# If Same file output is enabled, the program will use the name typed within the double quotes for the output file
+Save file name = "result.nes"
+
+# Close the program instantly on success
+Skip enter on success = 0
