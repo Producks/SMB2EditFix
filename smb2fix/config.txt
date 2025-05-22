@@ -23,7 +23,7 @@ Code injection = 1
 Always overwrite = 0
 
 # The program will always save the output file with the name you specify in Save file name
-Same file output = 0
+Same file output = 1
 
 # If Same file output is enabled, the program will use the name typed within the double quotes for the output file
 Save file name = "result.nes"
