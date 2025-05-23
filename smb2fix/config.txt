@@ -7,7 +7,7 @@
 # Change all colors from 0x0D to 0x0F
 Color fix = 1
 
-# Fixes a bug that made it so the last color of the sprites was loaded incorrectly
+# Fixes a bug that made it so the last color of the sprites load incorrectly
 Sprite color fix = 1
 
 # Fixes any levels with the random double 0xFF in the middle of the level data. This fixes level layout having a random cutoff in world 6
