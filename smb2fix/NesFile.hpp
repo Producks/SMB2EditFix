@@ -41,6 +41,7 @@ private:
   void apply_color_fix(void);
   void apply_level_data_fix(void);
   void apply_sprite_data_fix(void);
+  void apply_chr_a12_inversion(void);
   void fix_colors(uint32_t starting_adr, uint32_t length);
   void extract_area_data(Level &level, uint32_t current_level, uint8_t area_index);
   void extract_enemy_data(Level &level, uint32_t current_level, uint8_t area_index);

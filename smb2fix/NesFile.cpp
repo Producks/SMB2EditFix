@@ -1,8 +1,9 @@
 // By Producks
-// 2025/05/16
+// 2025/05/23
 
 #include "NesFile.hpp"
 #include "Config.h"
+#include "Io.hpp"
 #include <algorithm>
 #include <iterator>
 #include <iostream>
@@ -14,6 +15,8 @@
 #define BANK_SIZE 0x2000
 #define HEADER_SIZE 0x10
 #define TOTAL_LEVEL_COUNT 21
+#define CHR_A12_inversion 0x80
+#define ABS_LDA 0xA9
 
 static constexpr uint32_t CHARACTER_SELECT_PAL_ADDR = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xE0D5 - 0xC000);
 static constexpr uint32_t CHARACTER_SELECT_PAL_ADDR_DST = CHARACTER_SELECT_PAL_ADDR + 0x1B;
@@ -220,6 +223,47 @@ static constexpr std::array<uint8_t, 2> Original_SpriteColorFix_CPY {
   0xC0, 0x0B        // CPY #$0B
 };
 
+static constexpr std::array<uint8_t, 3> STA_MMC3_BankSelect {
+  0x8D, 0x00, 0x80  // STA MMC3_BankSelect 
+};
+
+constexpr uint32_t generate_addr(uint8_t bank_nbr, uint32_t adrr) {
+  if (bank_nbr == 0x1E)
+    return (HEADER_SIZE + BANK_SIZE * bank_nbr) + (adrr - 0xC000);
+  return (HEADER_SIZE + BANK_SIZE * bank_nbr) + (adrr - 0x8000);
+}
+
+static constexpr std::array<uint32_t, 22> chr_a12_addr {
+  generate_addr(0x6, 0x9AF6),
+  generate_addr(0x6, 0x9B31),
+  generate_addr(0x6, 0x9BF6),
+  generate_addr(0x6, 0x9C2F),
+
+  generate_addr(0x1E, 0xEE75),
+  generate_addr(0x1E, 0xEE87),
+
+  generate_addr(0x1E, 0xEEB6),
+  generate_addr(0x1E, 0xEED0),
+
+  generate_addr(0x1E, 0xEF18),
+  generate_addr(0x1E, 0xEF2E),
+
+  generate_addr(0x1E, 0xEF79),
+  generate_addr(0x1E, 0xEF83),
+  generate_addr(0x1E, 0xEFAF),
+  generate_addr(0x1E, 0xEFCD),
+  generate_addr(0x1E, 0xEFD7),
+
+  generate_addr(0x1E, 0xFB84),
+  generate_addr(0x1E, 0xFB8E),
+  generate_addr(0x1E, 0xFBB8),
+  generate_addr(0x1E, 0xFBD3),
+  generate_addr(0x1E, 0xFBDD),
+
+  generate_addr(0x1E, 0xFCF6),
+  generate_addr(0x1E, 0xFD15),
+};
+
 static constexpr uint32_t calculator = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEA0 - 0xC000);
 
 uint8_t NesFile::code_injection(const uint8_t *code_begin, const uint8_t *code_end, const uint8_t *original_code_begin, const uint8_t *original_code_end, uint32_t addr) {
@@ -394,6 +438,19 @@ void NesFile::apply_sprite_data_fix(void) {
   }
 }
 
+void NesFile::apply_chr_a12_inversion(void) {
+  for (auto it = chr_a12_addr.begin(); it < chr_a12_addr.end(); it++) {
+    uint32_t addr = *it;
+    if (rom_data_[addr] != ABS_LDA || !std::equal(STA_MMC3_BankSelect.begin(), STA_MMC3_BankSelect.end(), rom_data_.begin() + addr + 2)) {
+      std::cerr << "Could not insert CHR A12 inversion modification since code didn't match at address: 0x" << addr << std::endl;
+      Io::press_enter_to_continue();
+      continue;
+    }
+    rom_data_[addr + 1] = CHR_A12_inversion | rom_data_[addr + 1];
+    code_injection_count_++;
+  }
+}
+
 void NesFile::apply_color_fix(void) {
   fix_colors(CHAR_PAL_ADDR, CHAR_PAL_DST_ADDR);
   fix_colors(WORLD_PAL_ADDR, WORLD_PAL_DST_ADDR);
@@ -484,5 +541,7 @@ uint8_t NesFile::apply_fixes(const Config &config) {
     apply_level_data_fix();
   if (config.sprite_color_fix)
     apply_sprite_color_fix();
+  if (config.chr_a12_inversion_fix)
+    apply_chr_a12_inversion();
   return 0;
 }

@@ -20,13 +20,13 @@ Sprite level data fix = 0
 Wrappers injection = 1
 
 # Fixes a bug where the bank switching was done incorrectly. This fixes the garbage graphics during a transition when exiting a jar or the subspace
-CHR A12 inversion = 0
+CHR A12 inversion = 1
 
 
 # ~ Program options ~
 
 # Overwrite the file if it already exists without any warnings
-Always overwrite = 0
+Always overwrite = 1
 
 # The program will always save the output file with the name you specify in Save file name
 Same file output = 1
