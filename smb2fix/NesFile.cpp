@@ -541,7 +541,8 @@ uint8_t NesFile::apply_fixes(const Config &config) {
   extract_level_content();
   if (config.color_fix)
 	  apply_color_fix();
-  apply_sprite_data_fix();
+  if (config.sprite_data_fix)
+    apply_sprite_data_fix();
   if (config.level_fix)
     apply_level_data_fix();
   if (config.sprite_color_fix)

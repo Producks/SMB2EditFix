@@ -15,5 +15,10 @@ struct Config {
   bool overwrite_file = false;
   bool same_file_out = false;
   bool skip_enter_on_success = false;
+
+  bool no_drop_super_jump = false;
+  bool fix_chr_cycle = false;
+  bool disable_bonus_chance = false;
+  bool character_select_after_death = false;
   std::string output_name;
 };

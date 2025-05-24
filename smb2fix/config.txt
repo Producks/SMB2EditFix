@@ -22,7 +22,6 @@ Wrappers injection = 1
 # Fixes a bug where the bank switching was done incorrectly. This fixes the garbage graphics during a transition when exiting a jar or the subspace
 CHR A12 inversion = 1
 
-
 # ~ Program options ~
 
 # Overwrite the file if it already exists without any warnings
@@ -35,4 +34,19 @@ Same file output = 1
 Save file name = "result.nes"
 
 # Close the program instantly on success
-Skip enter on success = 0
+Skip enter on success = 1
+
+# ~ Misc Patches ~
+# Random patches that I made for a few of my past projects or that are from the disaasembly.
+
+# The player no longer drop an held item when holding B when doing a super jump.
+No item drop from super jump = 0
+
+# Restore the missing frame of animation that the game skip
+Fix CHR cycle = 0
+
+# Skips bonus chance after the end of a level
+Disable bonus chance = 0
+
+# Go to the Charater Select screen after death
+CHARACTER_SELECT_AFTER_DEATH = 0
