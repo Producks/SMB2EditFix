@@ -14,7 +14,7 @@ Sprite color fix = 1
 Level fix = 1
 
 # Fixes sprite level data that is missing the 0x00. This fix the bug where sprites would spawn from the next area in the last screen
-Sprite level data fix = 0
+Sprite level data fix = 1
 
 # Apply wrappers to subroutines with SEI CLI. This fixes levels that would load incorrectly in world 6-7
 Wrappers injection = 1

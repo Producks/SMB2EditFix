@@ -413,6 +413,10 @@ void NesFile::apply_sprite_data_fix(void) {
       uint32_t current_address = levels_[current_level].area[current_area].enemy_data_address;
       uint32_t end_addr = traverse_sprite_data(current_address, current_level, current_area);
       buffer.insert(buffer.cend(), rom_data_.cbegin() + current_address, rom_data_.cbegin() + end_addr);
+      if (current_area == 4) {
+        buffer.insert(buffer.end(), 0x0A - (levels_[current_level].area[current_area].page_count + 0x01), 0x01);
+        buffer.insert(buffer.cend(), rom_data_.cbegin() + current_address, rom_data_.cbegin() + current_address + rom_data_[current_address]);
+      }
       buffer.push_back(0x01);
       sprite_fix_count_++;
     }
@@ -430,7 +434,8 @@ void NesFile::apply_sprite_data_fix(void) {
       sprite_fix_count_++;
       rom_data_[levels_[current_level].enemy_ptr_table_lo + current_area] = sprite_ptr_addr & 0xFF;
       sprite_fix_count_++;
-      for (uint8_t area_count = 0; area_count <= levels_[current_level].area[current_area].page_count + 1; area_count++) {
+      uint8_t exit_condition = current_area != 4 ? levels_[current_level].area[current_area].page_count + 1 : 0x0B;
+      for (uint8_t area_count = 0; area_count <= exit_condition; area_count++) {
         sprite_ptr_addr += rom_data_[current_addr];
         current_addr += rom_data_[current_addr];
       }
@@ -486,9 +491,9 @@ bool NesFile::save_file(std::string &file_name) {
 void NesFile::print_summary(void) const {
   std::cout << "\n~ Summary ~\n";
   std::cout << "Color fixes applied: " << std::dec << color_fix_count_ << "\n";
-  // std::cout << "Sprite level data fixes applied: " << std::dec << sprite_fix_count_ << "\n";
-  // std::cout << "Old sprite level data size: " << std::dec << original_sprice_space_ << "\n";
-  // std::cout << "New sprite level data size: " << std::dec << new_sprite_space_ << "\n";
+  std::cout << "Sprite level data fixes applied: " << std::dec << sprite_fix_count_ << "\n";
+  std::cout << "Old sprite level data size: " << std::dec << original_sprice_space_ << "\n";
+  std::cout << "New sprite level data size: " << std::dec << new_sprite_space_ << "\n";
   std::cout << "Level data fixes applied: " << std::dec << level_fix_count_ << "\n";
   std::cout << "Code injection: " << std::dec << code_injection_count_ << std::endl;
 }
@@ -536,7 +541,7 @@ uint8_t NesFile::apply_fixes(const Config &config) {
   extract_level_content();
   if (config.color_fix)
 	  apply_color_fix();
-  // apply_sprite_data_fix();
+  apply_sprite_data_fix();
   if (config.level_fix)
     apply_level_data_fix();
   if (config.sprite_color_fix)
