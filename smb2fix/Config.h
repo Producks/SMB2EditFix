@@ -4,21 +4,22 @@
 #include <stdint.h>
 
 struct Config {
-  bool color_fix = true;
-  bool sprite_color_fix = true;
-  bool level_fix = true;
-  bool sprite_data_fix = true;
-  bool sei_wrapper = true;
-  bool chr_a12_inversion_fix = true;
-
-
-  bool overwrite_file = false;
-  bool same_file_out = false;
-  bool skip_enter_on_success = false;
-
-  bool no_drop_super_jump = false;
-  bool fix_chr_cycle = false;
-  bool disable_bonus_chance = false;
-  bool character_select_after_death = false;
+  uint16_t patches = 0;
+  uint16_t program = 0;
   std::string output_name;
 };
+
+constexpr uint16_t COLOR_FIX = 1 << 0;
+constexpr uint16_t SPRITE_COLOR_FIX = 1 << 1;
+constexpr uint16_t LEVEL_FIX = 1 << 2;
+constexpr uint16_t SPRITE_DATA_FIX = 1 << 3;
+constexpr uint16_t SEI_WRAPPER = 1 << 4;
+constexpr uint16_t CHR_A12_INVERSION_FIX = 1 << 5;
+constexpr uint16_t NO_DROP_SUPER_JUMP = 1 << 6;
+constexpr uint16_t FIX_CHR_CYCLE = 1 << 7;
+constexpr uint16_t DISABLE_BONUS_CHANCE = 1 << 8;
+constexpr uint16_t CHARACTER_SELECT_AFTER_DEATH = 1 << 9;
+
+constexpr uint16_t OVERWRITE_FILE = 1 << 0;
+constexpr uint16_t SAME_FILE_OUT = 1 << 1;
+constexpr uint16_t SKIP_ENTER_ON_SUCCESS = 1 << 2;

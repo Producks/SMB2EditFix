@@ -16,7 +16,7 @@ static void print_intro(void) { std::cout << "SMB2EditFix by Producks version 1.
 static bool save_result(Config &config, NesFile &nes_file) {
   std::string save_file_name;
 
-  if (config.same_file_out)
+  if (config.program & SAME_FILE_OUT)
     save_file_name = config.output_name;
   else
     Io::prompt_user(save_file_name, "\nEnter a name for the modified rom: ");
@@ -26,7 +26,7 @@ static bool save_result(Config &config, NesFile &nes_file) {
     Io::print_error_message("Couldn't save the new file");
     return 1;
   }
-  if (!config.skip_enter_on_success) {
+  if (!(config.program & SKIP_ENTER_ON_SUCCESS)) {
     std::cout << "Success!" << std::endl;
     Io::press_enter_to_continue();
   }

@@ -22,6 +22,7 @@ Wrappers injection = 1
 # Fixes a bug where the bank switching was done incorrectly. This fixes the garbage graphics during a transition when exiting a jar or the subspace
 CHR A12 inversion = 1
 
+
 # ~ Program options ~
 
 # Overwrite the file if it already exists without any warnings
@@ -36,6 +37,7 @@ Save file name = "result.nes"
 # Close the program instantly on success
 Skip enter on success = 1
 
+
 # ~ Misc Patches ~
 # Random patches that I made for a few of my past projects or that are from the disaasembly.
 
@@ -49,4 +51,4 @@ Fix CHR cycle = 0
 Disable bonus chance = 0
 
 # Go to the Charater Select screen after death
-CHARACTER_SELECT_AFTER_DEATH = 0
+Character select after death = 0

@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <iomanip>
 #include <array>
+#include <functional>
 
 #define ROM_SIZE 524304
 #define BANK_SIZE 0x2000
@@ -18,7 +19,17 @@
 #define CHR_A12_inversion 0x80
 #define ABS_LDA 0xA9
 
-static constexpr uint32_t CHARACTER_SELECT_PAL_ADDR = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xE0D5 - 0xC000);
+// Generate the rom address with the bank number + the address relative to that bank number
+// All done at compile time with constexpr!
+constexpr uint32_t generate_rom_addr(uint8_t bank_nbr, uint32_t adrr) {
+  uint32_t bank_offset = 0x8000;
+  if (bank_nbr == 0x1E)
+   bank_offset = 0xC000;
+  return (HEADER_SIZE + BANK_SIZE * bank_nbr) + (adrr - bank_offset);
+}
+
+// TODO: I should just constexpr func everything under here, but a typo is too easy to make. So it will stay this way for now.
+static constexpr uint32_t CHARACTER_SELECT_PAL_ADDR =  (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xE0D5 - 0xC000);
 static constexpr uint32_t CHARACTER_SELECT_PAL_ADDR_DST = CHARACTER_SELECT_PAL_ADDR + 0x1B;
 static constexpr uint32_t WORLD_PAL_ADDR = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x801C - 0x8000);
 static constexpr uint32_t WORLD_PAL_DST_ADDR = WORLD_PAL_ADDR + 0x40C;
@@ -227,41 +238,35 @@ static constexpr std::array<uint8_t, 3> STA_MMC3_BankSelect {
   0x8D, 0x00, 0x80  // STA MMC3_BankSelect 
 };
 
-constexpr uint32_t generate_addr(uint8_t bank_nbr, uint32_t adrr) {
-  if (bank_nbr == 0x1E)
-    return (HEADER_SIZE + BANK_SIZE * bank_nbr) + (adrr - 0xC000);
-  return (HEADER_SIZE + BANK_SIZE * bank_nbr) + (adrr - 0x8000);
-}
-
 static constexpr std::array<uint32_t, 22> chr_a12_addr {
-  generate_addr(0x6, 0x9AF6),
-  generate_addr(0x6, 0x9B31),
-  generate_addr(0x6, 0x9BF6),
-  generate_addr(0x6, 0x9C2F),
+  generate_rom_addr(0x6, 0x9AF6),
+  generate_rom_addr(0x6, 0x9B31),
+  generate_rom_addr(0x6, 0x9BF6),
+  generate_rom_addr(0x6, 0x9C2F),
 
-  generate_addr(0x1E, 0xEE75),
-  generate_addr(0x1E, 0xEE87),
+  generate_rom_addr(0x1E, 0xEE75),
+  generate_rom_addr(0x1E, 0xEE87),
 
-  generate_addr(0x1E, 0xEEB6),
-  generate_addr(0x1E, 0xEED0),
+  generate_rom_addr(0x1E, 0xEEB6),
+  generate_rom_addr(0x1E, 0xEED0),
 
-  generate_addr(0x1E, 0xEF18),
-  generate_addr(0x1E, 0xEF2E),
+  generate_rom_addr(0x1E, 0xEF18),
+  generate_rom_addr(0x1E, 0xEF2E),
 
-  generate_addr(0x1E, 0xEF79),
-  generate_addr(0x1E, 0xEF83),
-  generate_addr(0x1E, 0xEFAF),
-  generate_addr(0x1E, 0xEFCD),
-  generate_addr(0x1E, 0xEFD7),
+  generate_rom_addr(0x1E, 0xEF79),
+  generate_rom_addr(0x1E, 0xEF83),
+  generate_rom_addr(0x1E, 0xEFAF),
+  generate_rom_addr(0x1E, 0xEFCD),
+  generate_rom_addr(0x1E, 0xEFD7),
 
-  generate_addr(0x1E, 0xFB84),
-  generate_addr(0x1E, 0xFB8E),
-  generate_addr(0x1E, 0xFBB8),
-  generate_addr(0x1E, 0xFBD3),
-  generate_addr(0x1E, 0xFBDD),
+  generate_rom_addr(0x1E, 0xFB84),
+  generate_rom_addr(0x1E, 0xFB8E),
+  generate_rom_addr(0x1E, 0xFBB8),
+  generate_rom_addr(0x1E, 0xFBD3),
+  generate_rom_addr(0x1E, 0xFBDD),
 
-  generate_addr(0x1E, 0xFCF6),
-  generate_addr(0x1E, 0xFD15),
+  generate_rom_addr(0x1E, 0xFCF6),
+  generate_rom_addr(0x1E, 0xFD15),
 };
 
 static constexpr uint32_t calculator = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEA0 - 0xC000);
@@ -533,21 +538,25 @@ void NesFile::extract_enemy_data(Level &level, uint32_t current_level, uint8_t a
     ((rom_data_[level.enemy_ptr_table_hi + area_index] << 8) + (rom_data_[level.enemy_ptr_table_lo + area_index]) - 0x8000) + BANK_A_STARTING_ADDR;
 }
 
+bool do_nothing(void) {
+  return false;
+}
+
 uint8_t NesFile::apply_fixes(const Config &config) {
-  if (config.sei_wrapper) {
-    if (apply_sei_wrappers())
-      return 1;
-  }
+  const std::array<std::function<bool(void)>, 6> fixes_func{
+    [this]() -> bool { this->apply_color_fix(); return false; },
+    [this]() -> bool { this->apply_sprite_color_fix(); return false; },
+    [this]() -> bool { this->apply_level_data_fix(); return false; },
+    [this]() -> bool { this->apply_sprite_data_fix(); return false; },
+    [this]() -> bool { return this->apply_sei_wrappers(); },
+    [this]() -> bool { this->apply_chr_a12_inversion(); return false; },
+  };
   extract_level_content();
-  if (config.color_fix)
-	  apply_color_fix();
-  if (config.sprite_data_fix)
-    apply_sprite_data_fix();
-  if (config.level_fix)
-    apply_level_data_fix();
-  if (config.sprite_color_fix)
-    apply_sprite_color_fix();
-  if (config.chr_a12_inversion_fix)
-    apply_chr_a12_inversion();
+  for (uint8_t index = 0; index < fixes_func.size(); index++) {
+    if (config.patches & 1 << index) {
+      if (fixes_func[index]())
+        return 1;
+    }
+  }
   return 0;
 }

@@ -7,42 +7,48 @@
 #include <ctype.h>
 #include <map>
 #include <functional>
+#include <stdint.h>
 
-static void set_bool_config(bool &config, const std::string &value) { config = value == "1"; }
+static void config_bool_setter(uint16_t expression, const std::string &value, uint16_t &variable) { variable |= value == "1" ? expression : 0x00; }
 
-static void set_string_config(std::string &result, bool &set, const std::string &value) {
-  if (set) {
+static void set_string_config(std::string &result, uint16_t &set, const std::string &value) {
+  if (set & SAME_FILE_OUT) {
     std::size_t first_quote = value.find('\"');
     std::size_t second_quote = value.rfind('\"');
     if (first_quote == std::string::npos || second_quote == std::string::npos || first_quote == second_quote) {
       Io::print_error_message("When reading the file output name");
-      set = false;
+      set ^= SAME_FILE_OUT;
     }
     else {
       result = value.substr(first_quote + 1, second_quote - (first_quote + 1));
       if (result.empty()) {
         Io::print_error_message("The file output name can't be empty");
-        set = false;
+        set ^= SAME_FILE_OUT;
       }
-      std::cout << "result:" << result << std::endl;
     }
   }
 }
 
 static std::map<const std::string, std::function<void(Config&, const std::string&)>> func_map {
   // Rom modifications
-  {"Colorfix", [](Config &config, const std::string &value) {set_bool_config(config.color_fix, value);}},
-  {"Spritecolorfix", [](Config &config, const std::string &value) {set_bool_config(config.sprite_color_fix, value);}},
-  {"Levelfix", [](Config &config, const std::string &value) {set_bool_config(config.level_fix, value);}},
-  {"Spriteleveldatafix", [](Config &config, const std::string &value) {set_bool_config(config.sprite_data_fix, value);}},
-  {"Wrappersinjection", [](Config &config, const std::string &value) {set_bool_config(config.sei_wrapper, value);}},
-  {"CHRA12inversion", [](Config &config, const std::string &value) {set_bool_config(config.chr_a12_inversion_fix, value);}},
+  {"Colorfix", [](Config &config, const std::string &value) {config_bool_setter(COLOR_FIX, value, config.patches);}},
+  {"Spritecolorfix", [](Config &config, const std::string &value) {config_bool_setter(SPRITE_COLOR_FIX, value, config.patches);}},
+  {"Levelfix", [](Config &config, const std::string &value) {config_bool_setter(LEVEL_FIX, value, config.patches);}},
+  {"Spriteleveldatafix", [](Config &config, const std::string &value) {config_bool_setter(SPRITE_DATA_FIX, value, config.patches);}},
+  {"Wrappersinjection", [](Config &config, const std::string &value) {config_bool_setter(SEI_WRAPPER, value, config.patches);}},
+  {"CHRA12inversion", [](Config &config, const std::string &value) {config_bool_setter(CHR_A12_INVERSION_FIX, value, config.patches);}},
 
-  // Program options
-  {"Alwaysoverwrite", [](Config &config, const std::string &value) {set_bool_config(config.overwrite_file, value);}},
-  {"Samefileoutput", [](Config &config, const std::string &value) {set_bool_config(config.same_file_out, value);}},
-  {"Skipenteronsuccess", [](Config &config, const std::string &value) {set_bool_config(config.skip_enter_on_success, value);}},
-  {"Savefilename", [](Config &config, const std::string &value) {set_string_config(config.output_name, config.same_file_out, value);}}
+  // Misc patches
+  {"Noitemdropfromsuperjump", [](Config &config, const std::string &value) {config_bool_setter(NO_DROP_SUPER_JUMP, value, config.patches);}},
+  {"FixCHRcycle", [](Config &config, const std::string &value) {config_bool_setter(FIX_CHR_CYCLE, value, config.patches);}},
+  {"Disablebonuschance", [](Config &config, const std::string &value) {config_bool_setter(DISABLE_BONUS_CHANCE, value, config.patches);}},
+  {"Characterselectafterdeath", [](Config &config, const std::string &value) {config_bool_setter(CHARACTER_SELECT_AFTER_DEATH, value, config.patches);}},
+
+  // Program options 
+  {"Alwaysoverwrite", [](Config &config, const std::string &value) {config_bool_setter(OVERWRITE_FILE, value, config.program);}},
+  {"Samefileoutput", [](Config &config, const std::string &value) {config_bool_setter(SAME_FILE_OUT, value, config.program);}},
+  {"Skipenteronsuccess", [](Config &config, const std::string &value) {config_bool_setter(SKIP_ENTER_ON_SUCCESS, value, config.program);}},
+  {"Savefilename", [](Config &config, const std::string &value) {set_string_config(config.output_name, config.program, value);}}
 };
 
 static void sanitize_line(std::string &line) {
