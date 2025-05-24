@@ -9335,6 +9335,14 @@ loc_BANK3_AE28:
 
 	BMI loc_BANK3_AE45
 
+IFDEF SMB2FIX
+  LDA byte_RAM_0
+  PHA
+  TAX
+  JSR AutoBombFix
+  PLA
+  TAX
+ELSE
 	LDX byte_RAM_0 ; X has the new enemy index
 	LDA #Enemy_AutobombFire
 	; Set the enemy type and attributes
@@ -9343,6 +9351,7 @@ loc_BANK3_AE28:
 	JSR EnemyBehavior_SpitProjectile
 
 	LDX byte_RAM_0
+ENDIF
 	DEC ObjectYLo, X
 	DEC ObjectYLo, X
 	LDX byte_RAM_12

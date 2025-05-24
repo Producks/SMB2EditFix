@@ -39,10 +39,13 @@ Skip enter on success = 1
 
 
 # ~ Misc Patches ~
-# Random patches that I made for a few of my past projects or that are from the disaasembly.
+# Random patches that I made for a few of my past projects or that are from the smb2 disassembly.
 
 # The player no longer drop an held item when holding B when doing a super jump.
 No item drop from super jump = 0
+
+# Fixes a critical bug with the autobomb that would corrupt the memory. Fireball should spawn correctly from every angle now!
+Fix auto bomb = 0
 
 # Restore the missing frame of animation that the game skip
 Fix CHR cycle = 0

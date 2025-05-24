@@ -19,6 +19,7 @@ constexpr uint16_t NO_DROP_SUPER_JUMP = 1 << 6;
 constexpr uint16_t FIX_CHR_CYCLE = 1 << 7;
 constexpr uint16_t DISABLE_BONUS_CHANCE = 1 << 8;
 constexpr uint16_t CHARACTER_SELECT_AFTER_DEATH = 1 << 9;
+constexpr uint16_t AUTO_BOMB_FIX = 1 << 10;
 
 constexpr uint16_t OVERWRITE_FILE = 1 << 0;
 constexpr uint16_t SAME_FILE_OUT = 1 << 1;

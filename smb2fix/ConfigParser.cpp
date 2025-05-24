@@ -43,6 +43,7 @@ static std::map<const std::string, std::function<void(Config&, const std::string
   {"FixCHRcycle", [](Config &config, const std::string &value) {config_bool_setter(FIX_CHR_CYCLE, value, config.patches);}},
   {"Disablebonuschance", [](Config &config, const std::string &value) {config_bool_setter(DISABLE_BONUS_CHANCE, value, config.patches);}},
   {"Characterselectafterdeath", [](Config &config, const std::string &value) {config_bool_setter(CHARACTER_SELECT_AFTER_DEATH, value, config.patches);}},
+  {"Fixautobomb", [](Config &config, const std::string &value) {config_bool_setter(AUTO_BOMB_FIX, value, config.patches);}},
 
   // Program options 
   {"Alwaysoverwrite", [](Config &config, const std::string &value) {config_bool_setter(OVERWRITE_FILE, value, config.program);}},

@@ -238,6 +238,63 @@ static constexpr std::array<uint8_t, 3> STA_MMC3_BankSelect {
   0x8D, 0x00, 0x80  // STA MMC3_BankSelect 
 };
 
+static constexpr uint32_t CPY_CHR_addr = generate_rom_addr(0x1E, 0xFAF4);
+static constexpr std::array<uint8_t, 2> New_CPY_CHR {
+  0xC0, 0x27 // CPY #CHRBank_Animated8 + 1
+};
+
+static constexpr std::array<uint8_t, 2> Ori_CPY_CHR {
+  0xC0, 0x26 // CPY #CHRBank_Animated8
+};
+
+static constexpr uint32_t Clear_Held_addr = generate_rom_addr(0x00, 0x8CBF);
+static constexpr std::array<uint8_t, 2> ABS_LDA_Held{
+  0xA9, 0x40  // LDA #$40
+};
+static constexpr std::array<uint8_t, 2> Ori_ABS_LDA_Held {
+  0xA9, 0x00  // LDA #$00
+};
+
+static constexpr uint32_t End_Level_Machine_addr = generate_rom_addr(0x1E, 0xE7B7);
+static constexpr std::array<uint8_t, 3> JMP_SKIP_SLOT{
+  0x4C, 0x02, 0xE8  // JMP GoToNextLevel
+};
+static constexpr std::array<uint8_t, 3> Ori_JSR_SLOT{
+  0x20, 0xA3, 0xEA  // JSR WaitForNMI_TurnOffPPU
+};
+
+static constexpr uint32_t AfterDeathJump_addr = generate_rom_addr(0x1E, 0xE69C);
+static constexpr std::array<uint8_t, 3> New_AfterDeath_JMP {
+  0x4C, 0x35, 0xE4  // JMP CharacterSelectMenu
+};
+static constexpr std::array<uint8_t, 3> Ori_AfterDeath_JMP {
+  0x4C, 0x38, 0xE4  // AfterDeathJump
+};
+
+static constexpr uint32_t loc_BANK3_AE28_addr = generate_rom_addr(0x02, 0xAE36);
+static constexpr std::array<uint8_t, 9> New_AutoBomb_code {
+  0xA5, 0x00,       // LDA byte_RAM_0
+  0x48,             // PHA
+  0xAA,             // TAX
+  0x20, 0x07, 0xEF, // JSR AutoBombFix
+  0x68,             // PLA
+  0xAA              // TAX
+};
+
+static constexpr std::array<uint8_t, 9> Ori_AutoBomb_code {
+  0xA6, 0x00,       // LDX byte_RAM_0
+  0xA9, 0x27,       // LDA #Enemy_AutobombFire
+  0x20, 0x04, 0x90, // JSR EnemyBehavior_SpitProjectile
+  0xA6, 0x00        // LDX byte_RAM_0
+};
+
+static constexpr uint32_t AutoBombFix_addr = generate_rom_addr(0x1E, 0xEF07);
+static constexpr std::array<uint8_t, 6> AutoBombfix_subroutine {
+  0xA9, 0x27,       // LDA #Enemy_AutobombFire
+  0x20, 0x04, 0x90, // JSR EnemyBehavior_SpitProjectile
+  0x60              // RTS
+};
+
 static constexpr std::array<uint32_t, 22> chr_a12_addr {
   generate_rom_addr(0x6, 0x9AF6),
   generate_rom_addr(0x6, 0x9B31),
@@ -271,7 +328,7 @@ static constexpr std::array<uint32_t, 22> chr_a12_addr {
 
 static constexpr uint32_t calculator = (HEADER_SIZE + BANK_SIZE * 0x1E) + (0xEEA0 - 0xC000);
 
-uint8_t NesFile::code_injection(const uint8_t *code_begin, const uint8_t *code_end, const uint8_t *original_code_begin, const uint8_t *original_code_end, uint32_t addr) {
+bool NesFile::code_injection(const uint8_t *code_begin, const uint8_t *code_end, const uint8_t *original_code_begin, const uint8_t *original_code_end, uint32_t addr) {
   if (std::equal(code_begin, code_end, rom_data_.begin() + addr))
     return 0;
   if (std::equal(original_code_begin, original_code_end, rom_data_.begin() + addr)) {
@@ -346,10 +403,18 @@ uint8_t NesFile::apply_sei_wrappers(void) {
   return 0;
 }
 
-uint8_t NesFile::apply_sprite_color_fix(void) {
+bool NesFile::apply_sprite_color_fix(void) {
   return code_injection(
     Fixed_SpriteColorFix_CPY.begin(), Fixed_SpriteColorFix_CPY.end(),
       Original_SpriteColorFix_CPY.begin(), Original_SpriteColorFix_CPY.end(), SpriteColorFix_CPY_addr);
+}
+
+bool NesFile::apply_auto_bomb_fix(void) {
+  if (subroutine_injection(AutoBombfix_subroutine.begin(), AutoBombfix_subroutine.end(), AutoBombfix_subroutine.size(), AutoBombFix_addr)) {
+    std::cerr << "With auto bomb fix! Use this tool again without the patch that modify code at the address location" << std::endl;
+    return true;
+  }
+  return code_injection(New_AutoBomb_code.begin(), New_AutoBomb_code.end(), Ori_AutoBomb_code.begin(), Ori_AutoBomb_code.end(), loc_BANK3_AE28_addr);
 }
 
 void NesFile::fix_level_issues(const uint8_t starting_level, const uint8_t ending_level) {
@@ -543,13 +608,18 @@ bool do_nothing(void) {
 }
 
 uint8_t NesFile::apply_fixes(const Config &config) {
-  const std::array<std::function<bool(void)>, 6> fixes_func{
+  const std::array<std::function<bool(void)>, 11> fixes_func{
     [this]() -> bool { this->apply_color_fix(); return false; },
     [this]() -> bool { this->apply_sprite_color_fix(); return false; },
     [this]() -> bool { this->apply_level_data_fix(); return false; },
     [this]() -> bool { this->apply_sprite_data_fix(); return false; },
     [this]() -> bool { return this->apply_sei_wrappers(); },
     [this]() -> bool { this->apply_chr_a12_inversion(); return false; },
+    [this]() -> bool { return this->code_injection(ABS_LDA_Held.begin(), ABS_LDA_Held.end(), Ori_ABS_LDA_Held.begin(), Ori_ABS_LDA_Held.end(), Clear_Held_addr); },
+    [this]() -> bool { return this->code_injection(New_CPY_CHR.begin(), New_CPY_CHR.end(), Ori_CPY_CHR.begin(), Ori_CPY_CHR.end(), CPY_CHR_addr); },
+    [this]() -> bool { return this->code_injection(JMP_SKIP_SLOT.begin(), JMP_SKIP_SLOT.end(), Ori_JSR_SLOT.begin(), Ori_JSR_SLOT.end(), End_Level_Machine_addr); },
+    [this]() -> bool { return this->code_injection(New_AfterDeath_JMP.begin(), New_AfterDeath_JMP.end(), Ori_AfterDeath_JMP.begin(), Ori_AfterDeath_JMP.end(), AfterDeathJump_addr); },
+    [this]() -> bool { return this->apply_auto_bomb_fix(); },
   };
   extract_level_content();
   for (uint8_t index = 0; index < fixes_func.size(); index++) {

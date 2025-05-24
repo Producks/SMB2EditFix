@@ -3047,6 +3047,11 @@ Wrapper_RestoreNMI:
   PHA
   LDA PPUCtrlMirror
   JMP WrapperSetPPUCTRL
+
+AutoBombFix:
+  LDA #Enemy_AutobombFire
+  JSR EnemyBehavior_SpitProjectile
+  RTS
 ENDIF
 
 .pad $EF10, $FF
