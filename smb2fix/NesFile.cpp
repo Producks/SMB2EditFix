@@ -336,7 +336,7 @@ bool NesFile::code_injection(const uint8_t *code_begin, const uint8_t *code_end,
     code_injection_count_ += code_end - code_begin;
     return 0;
   }
-  std::cerr << "Invalid code when trying to override the subroutine call at address: 0x" << std::hex << addr << std::endl;
+  std::cerr << "Invalid match when trying to override the code at address: 0x" << std::hex << addr << std::endl;
   return 1;
 }
 
@@ -410,11 +410,20 @@ bool NesFile::apply_sprite_color_fix(void) {
 }
 
 bool NesFile::apply_auto_bomb_fix(void) {
-  if (subroutine_injection(AutoBombfix_subroutine.begin(), AutoBombfix_subroutine.end(), AutoBombfix_subroutine.size(), AutoBombFix_addr)) {
+  std::array <uint8_t, 9> custom_auto_bomb_code;
+  std::array <uint8_t, 6> custom_subroutine;
+  std::copy(Ori_AutoBomb_code.begin(), Ori_AutoBomb_code.end(), custom_auto_bomb_code.begin());
+  std::copy(AutoBombfix_subroutine.begin(), AutoBombfix_subroutine.end(), custom_subroutine.begin());
+  uint8_t value = rom_data_[loc_BANK3_AE28_addr + 3];
+  custom_auto_bomb_code[3] = value;
+  custom_subroutine[1] = value;
+
+  std::cout << std::endl;
+  if (subroutine_injection(custom_subroutine.begin(), custom_subroutine.end(), custom_subroutine.size(), AutoBombFix_addr)) {
     std::cerr << "With auto bomb fix! Use this tool again without the patch that modify code at the address location" << std::endl;
     return true;
   }
-  return code_injection(New_AutoBomb_code.begin(), New_AutoBomb_code.end(), Ori_AutoBomb_code.begin(), Ori_AutoBomb_code.end(), loc_BANK3_AE28_addr);
+  return code_injection(New_AutoBomb_code.begin(), New_AutoBomb_code.end(), custom_auto_bomb_code.begin(), custom_auto_bomb_code.end(), loc_BANK3_AE28_addr);
 }
 
 void NesFile::fix_level_issues(const uint8_t starting_level, const uint8_t ending_level) {

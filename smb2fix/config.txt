@@ -1,6 +1,7 @@
 # SMB2EditFix config file
 # 1 = Enable/On
 # 0 = Disable/Off
+# Anything with a # in front is just a comment!
 
 # ~ Rom modifications ~
 
@@ -45,6 +46,9 @@ Skip enter on success = 1
 No item drop from super jump = 0
 
 # Fixes a critical bug with the autobomb that would corrupt the memory. Fireball should spawn correctly from every angle now!
+# This patch has a good chance to not get applied due to some shifting SMB2edit can do if you use custom sprites.
+# I tried making it has compatible has possible, I just don't know how SMB2Edit assign the new enemies IDs.
+# If you can't apply this patch, I wouldn't use the autobomb at all.
 Fix auto bomb = 0
 
 # Restore the missing frame of animation that the game skip
