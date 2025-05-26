@@ -50,7 +50,7 @@ No item drop from super jump = 0
 Respawn instead of death = 1
 
 # If you have quick respawn on and want to turn off the the death sound effect.
-Mute respawn sound = 0
+Mute respawn sound = 1
 
 # Fixes a critical bug with the autobomb that would corrupt the memory. Fireball should spawn correctly from every angle now!
 # This patch has a good chance to not get applied due to some shifting SMB2edit do to enemy ID's.
@@ -66,9 +66,9 @@ Disable bonus chance = 0
 # Go to the Charater Select screen after death
 Character select after death = 0
 
-# Make it so the background only change to one static color
-# This color can be changed at 0x
-Single color bomb flash = 0
+# Make it so the background only change to one static color when there an explosion
+# The color can be changed at location 0x7E17
+Single color bomb flash = 1
 
 # Disable the falling sound effect in 1-1 when starting the game
 Disable falling sound = 0

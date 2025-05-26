@@ -1,5 +1,5 @@
 // By Producks
-// 2025/05/23
+// 2025/05/26
 
 #include "NesFile.hpp"
 #include "Config.h"
@@ -368,6 +368,14 @@ static constexpr std::array<uint8_t, 11> New_loc_BANKF_F749 {
   0xEA,               // NOP
   0xEA,               // NOP
 };
+static constexpr std::array<uint8_t, 11> No_sound_loc_BANKF_F749 {
+  0x4C, 0x27, 0xE5,   // JMP RespawnPlayer
+  0xA9, 0x80,         // LDA #DPCM_PlayerDeath
+  0x8D, 0x01, 0x06,   // STA DPCMQueue
+  0xEA,               // NOP
+  0xEA,               // NOP
+  0xEA,               // NOP
+};
 static constexpr std::array<uint8_t, 11> Ori_loc_BANKF_F749 {
   0xA9, 0x08,         // LDA #Music2_DeathJingle
   0x8D, 0x03, 0x06,   // STA MusicQueue2
@@ -415,6 +423,21 @@ static constexpr std::array<uint8_t, 40> Ori_Respawn_SubRoutine {
   0xD0, 0x12,         // BNE HidePauseScreen
   0xC6, 0x06,         // DEC byte_RAM_6
   0x10, 0xE4          // BPL DoSuicideCheatCheck
+};
+
+static constexpr uint32_t SkyFlashColors_addr = generate_rom_addr(0x02, 0xBE07);
+
+static constexpr uint32_t LDA_IntroFallSlide_addr = generate_rom_addr(0x02, 0x8088);
+static constexpr std::array<uint8_t, 5> NOP_IntroFallSlideSound {
+  0xEA,               // NOP
+  0xEA,               // NOP
+  0xEA,               // NOP
+  0xEA,               // NOP
+  0xEA                // NOP
+};
+static constexpr std::array<uint8_t, 5> Ori_IntroFallSlideSound {
+  0xA9, 0x10,         // LDA #SoundEffect2_IntroFallSlide
+  0x8D, 0x04, 0x06    // STA SoundEffectQueue2
 };
 
 static constexpr std::array<uint32_t, 22> chr_a12_addr {
@@ -549,6 +572,29 @@ bool NesFile::apply_quick_respawn(void) {
     return true;
   }
   return false;
+}
+
+bool NesFile::apply_no_sound_quick_respawn(void) {
+  if (code_injection(No_sound_loc_BANKF_F749.begin(), No_sound_loc_BANKF_F749.end(),
+    New_loc_BANKF_F749.begin(), New_loc_BANKF_F749.end(), loc_BANKF_F749_addr, "No sound quick respawn")) {
+      std::cerr << "Make sure you have the quick respawn patch on" << std::endl;
+      return true;
+    }
+  return false;
+}
+
+bool NesFile::apply_mono_flash(void) {
+  uint8_t color = rom_data_[SkyFlashColors_addr];
+  rom_data_[SkyFlashColors_addr + 1] = color;
+  rom_data_[SkyFlashColors_addr + 2] = color;
+  rom_data_[SkyFlashColors_addr + 3] = color;
+  color_fix_count_ += 3;
+  return false;
+}
+
+bool NesFile::apply_no_intro_fall_sound(void) {
+  return code_injection(NOP_IntroFallSlideSound.begin(), NOP_IntroFallSlideSound.end(),
+    Ori_IntroFallSlideSound.begin(), Ori_IntroFallSlideSound.end(), LDA_IntroFallSlide_addr, "No intro fall sound");
 }
 
 bool NesFile::apply_auto_bomb_fix(void) {
@@ -777,7 +823,7 @@ void NesFile::extract_enemy_data(Level &level, uint32_t current_level, uint8_t a
 }
 
 bool NesFile::apply_fixes(const Config &config) {
-  const std::array<std::function<std::optional<bool>(void)>, 12> fixes_func{
+  const std::array<std::function<std::optional<bool>(void)>, 15> fixes_func{
     [this]() -> std::optional<bool> { this->apply_color_fix(); return std::nullopt; },
     [this]() -> std::optional<bool> { return this->apply_sprite_color_fix(); },
     [this]() -> std::optional<bool> { this->apply_level_data_fix(); return std::nullopt; },
@@ -790,6 +836,9 @@ bool NesFile::apply_fixes(const Config &config) {
     [this]() -> std::optional<bool> { return this->apply_char_select_after_death(); },
     [this]() -> std::optional<bool> { return this->apply_auto_bomb_fix(); },
     [this]() -> std::optional<bool> { return this->apply_quick_respawn(); },
+    [this]() -> std::optional<bool> { return this->apply_no_sound_quick_respawn(); },
+    [this]() -> std::optional<bool> { return this->apply_mono_flash(); },
+    [this]() -> std::optional<bool> { return this->apply_no_intro_fall_sound(); },
   };
   extract_level_content();
   for (uint8_t index = 0; index < fixes_func.size(); index++) {
