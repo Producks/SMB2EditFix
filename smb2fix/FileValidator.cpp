@@ -1,5 +1,5 @@
 // By Producks
-// 2025/05/16
+// 2025/05/26
 
 #include "FileValidator.hpp"
 #include "Io.hpp"
@@ -18,7 +18,7 @@ bool FileValidator::validate_out_file(std::string &out_file_name, const Config &
     Io::prompt_user(confirmation, "\nWarning: This file exists. To overwrite, type 'y' or 'Y' and press enter:");
     if (confirmation != "y" && confirmation != "Y") {
       std::cerr << "Relaunch the program with another file name" << std::endl;
-      Io::press_enter_to_continue();
+      Io::press_enter_to_exit();
       return false;
     }
   }

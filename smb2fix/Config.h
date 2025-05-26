@@ -24,7 +24,6 @@ constexpr uint16_t QUICK_RESPAWN = 1 << 11;
 constexpr uint16_t MUTE_QUICK_RESPAWN = 1 << 12;
 constexpr uint16_t MONO_BOMB_FLASH = 1 << 13;
 constexpr uint16_t DISABLE_FALLING_SOUND = 1 << 14;
-constexpr uint16_t ITEMS_THROUGH_DOORS = 1 << 15;
 
 constexpr uint16_t OVERWRITE_FILE = 1 << 0;
 constexpr uint16_t SAME_FILE_OUT = 1 << 1;

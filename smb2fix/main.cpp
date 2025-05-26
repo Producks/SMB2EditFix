@@ -1,5 +1,5 @@
 // By Producks
-// 2025/05/16
+// 2025/05/24
 
 #include <iostream>
 #include <fstream>
@@ -11,7 +11,7 @@
 #include "ConfigParser.hpp"
 #include "Config.h"
 
-static void print_intro(void) { std::cout << "SMB2EditFix by Producks version 1.2\nSource code: https://github.com/Producks/SMB2EditFix\n" << std::endl; }
+static void print_intro(void) { std::cout << "SMB2EditFix by Producks version 1.3\nSource code: https://github.com/Producks/SMB2EditFix\n" << std::endl; }
 
 static bool save_result(Config &config, NesFile &nes_file) {
   std::string save_file_name;
@@ -28,7 +28,7 @@ static bool save_result(Config &config, NesFile &nes_file) {
   }
   if (!(config.program & SKIP_ENTER_ON_SUCCESS)) {
     std::cout << "Success!" << std::endl;
-    Io::press_enter_to_continue();
+    Io::press_enter_to_exit();
   }
   return true;
 }
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
   if (init(config, nes_file, argc, argv))
     return 1;
   if (!nes_file.apply_fixes(config)) {
-    Io::press_enter_to_continue();
+    Io::press_enter_to_exit();
     return 1;
   }
   nes_file.print_summary();

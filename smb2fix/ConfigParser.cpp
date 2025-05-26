@@ -1,3 +1,6 @@
+// By Producks
+// 2025/05/26
+
 #include "ConfigParser.hpp"
 #include "Config.h"
 #include "Io.hpp"
@@ -48,7 +51,6 @@ static std::map<const std::string, std::function<void(Config&, const std::string
   {"Muterespawnsound", [](Config &config, const std::string &value) {config_bool_setter(MUTE_QUICK_RESPAWN, value, config.patches);}},
   {"Singlecolorbombflash", [](Config &config, const std::string &value) {config_bool_setter(MONO_BOMB_FLASH, value, config.patches);}},
   {"Disablefallingsound", [](Config &config, const std::string &value) {config_bool_setter(DISABLE_FALLING_SOUND, value, config.patches);}},
-  {"Anyitemsthroughdoors", [](Config &config, const std::string &value) {config_bool_setter(ITEMS_THROUGH_DOORS, value, config.patches);}},
 
   // Program options 
   {"Alwaysoverwrite", [](Config &config, const std::string &value) {config_bool_setter(OVERWRITE_FILE, value, config.program);}},
