@@ -20,6 +20,11 @@ constexpr uint16_t FIX_CHR_CYCLE = 1 << 7;
 constexpr uint16_t DISABLE_BONUS_CHANCE = 1 << 8;
 constexpr uint16_t CHARACTER_SELECT_AFTER_DEATH = 1 << 9;
 constexpr uint16_t AUTO_BOMB_FIX = 1 << 10;
+constexpr uint16_t QUICK_RESPAWN = 1 << 11;
+constexpr uint16_t MUTE_QUICK_RESPAWN = 1 << 12;
+constexpr uint16_t MONO_BOMB_FLASH = 1 << 13;
+constexpr uint16_t DISABLE_FALLING_SOUND = 1 << 14;
+constexpr uint16_t ITEMS_THROUGH_DOORS = 1 << 15;
 
 constexpr uint16_t OVERWRITE_FILE = 1 << 0;
 constexpr uint16_t SAME_FILE_OUT = 1 << 1;

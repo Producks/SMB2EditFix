@@ -3,16 +3,17 @@
 
 #include "FileValidator.hpp"
 #include "Io.hpp"
+#include "Config.h"
 #include <iostream>
 #include <filesystem>
 #include <fstream>
 
-bool FileValidator::validate_out_file(std::string &out_file_name) {
+bool FileValidator::validate_out_file(std::string &out_file_name, const Config &config) {
   if (std::cin.fail() || out_file_name.empty())
     return Io::print_error_message("With the file name! It can't be empty!");
   if (!out_file_name.ends_with(".nes"))
     out_file_name += ".nes";
-  if (std::filesystem::exists(out_file_name)) {
+  if (std::filesystem::exists(out_file_name) && !(config.program & OVERWRITE_FILE)) {
     std::string confirmation;
     Io::prompt_user(confirmation, "\nWarning: This file exists. To overwrite, type 'y' or 'Y' and press enter:");
     if (confirmation != "y" && confirmation != "Y") {

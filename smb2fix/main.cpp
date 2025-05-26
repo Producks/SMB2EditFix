@@ -11,7 +11,7 @@
 #include "ConfigParser.hpp"
 #include "Config.h"
 
-static void print_intro(void) { std::cout << "SMB2EditFix by Producks version 1.1\nSource code: https://github.com/Producks/SMB2EditFix\n" << std::endl; }
+static void print_intro(void) { std::cout << "SMB2EditFix by Producks version 1.2\nSource code: https://github.com/Producks/SMB2EditFix\n" << std::endl; }
 
 static bool save_result(Config &config, NesFile &nes_file) {
   std::string save_file_name;
@@ -20,7 +20,7 @@ static bool save_result(Config &config, NesFile &nes_file) {
     save_file_name = config.output_name;
   else
     Io::prompt_user(save_file_name, "\nEnter a name for the modified rom: ");
-  if (!FileValidator::validate_out_file(save_file_name))
+  if (!FileValidator::validate_out_file(save_file_name, config))
     return 1;
   if (!nes_file.save_file(save_file_name)) {
     Io::print_error_message("Couldn't save the new file");
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
   print_intro();
   if (init(config, nes_file, argc, argv))
     return 1;
-  if (nes_file.apply_fixes(config)) {
+  if (!nes_file.apply_fixes(config)) {
     Io::press_enter_to_continue();
     return 1;
   }

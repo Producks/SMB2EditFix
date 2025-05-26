@@ -26,13 +26,13 @@ public:
   NesFile() = default;
   ~NesFile() = default;
   void create_copy(std::ifstream &rom);
-  uint8_t apply_fixes(const Config &config);
+  bool apply_fixes(const Config &config);
   bool save_file(std::string &file_name);
   void print_summary(void) const;
 
 private:
-  uint8_t subroutine_injection(const uint8_t *begin, const uint8_t *end, const uint8_t size, const uint32_t addr);
-  uint8_t override_subroutine_call(const std::array<uint8_t, 3> &wrapper, const std::array<uint8_t, 3> &original, const uint32_t addr);
+  uint8_t subroutine_injection(const uint8_t *begin, const uint8_t *end, const uint8_t size, const uint32_t addr, const std::string &context);
+  uint8_t override_subroutine_call(const std::array<uint8_t, 3> &wrapper, const std::array<uint8_t, 3> &original, const uint32_t addr, const std::string &context);
   uint8_t apply_sei_wrappers(void);
   bool apply_sprite_color_fix(void);
   uint8_t get_first_level_page_length(void) const;
@@ -41,13 +41,18 @@ private:
   void apply_color_fix(void);
   void apply_level_data_fix(void);
   void apply_sprite_data_fix(void);
-  void apply_chr_a12_inversion(void);
+  bool apply_chr_a12_inversion(void);
   bool apply_auto_bomb_fix(void);
   void fix_colors(uint32_t starting_adr, uint32_t length);
   void extract_area_data(Level &level, uint32_t current_level, uint8_t area_index);
   void extract_enemy_data(Level &level, uint32_t current_level, uint8_t area_index);
-  bool code_injection(const uint8_t *code_begin, const uint8_t *code_end, const uint8_t *original_code_begin, const uint8_t *original_code_end, uint32_t addr);
+  bool code_injection(const uint8_t *code_begin, const uint8_t *code_end, const uint8_t *original_code_begin, const uint8_t *original_code_end, uint32_t addr, const std::string &context);
+  bool apply_quick_respawn(void);
   uint32_t traverse_sprite_data(uint32_t current_addr, uint8_t current_level, uint8_t current_area);
+  bool apply_no_drop(void);
+  bool apply_fix_chr_cycle(void);
+  bool apply_disable_bonus_chance(void);
+  bool apply_char_select_after_death(void);
   std::vector<uint8_t> rom_data_;
   std::vector<Level> levels_;
   uint32_t color_fix_count_ = 0;

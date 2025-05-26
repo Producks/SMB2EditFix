@@ -1109,10 +1109,6 @@ VerticalLevel_CheckTransition:
 ShowPauseScreen:
 IFNDEF RESPAWN_INSTEAD_OF_DEATH
 	JSR PauseScreen_ExtraLife
-ELSE
-	JMP PauseRespawn
-ENDIF
-
 SetStack100Pause:
 	; used when running sound queues
 	LDA #Stack100_Pause
@@ -1142,7 +1138,36 @@ PauseScreenExitCheck:
 
 	DEC byte_RAM_6
 	BPL DoSuicideCheatCheck
+ELSE
+PauseScreenLoop:
+PauseRespawn:
+	; Check conditions where we shouldn't allow respawn
+	LDA PlayerLock
+	BNE PauseRespawn_Exit
+PauseRespawn_KillPlayer:
+	JSR KillPlayer
 
+PauseRespawn_Exit:
+	LDA IsHorizontalLevel
+	BEQ PauseRespawn_Vertical
+	JMP HorizontalLevel_CheckSubArea
+PauseRespawn_Vertical:
+	JMP VerticalLevel_ProcessFrame
+
+RespawnPlayer:
+	; Stop invincibility music
+	LDA MusicPlaying1
+	CMP #Music1_Invincible
+	BNE RespawnPlayer_AfterMusic
+	LDY CurrentMusicIndex
+	LDA LevelMusicIndexes, Y
+	STA MusicQueue1
+RespawnPlayer_AfterMusic:
+	LDA #SpriteAnimation_Standing
+	STA PlayerAnimationFrame
+	RTS
+  NOP
+ENDIF
 	INC byte_RAM_7
 	LDA byte_RAM_7
 	AND #$01
@@ -6386,49 +6411,6 @@ LoadMarioSleepingCHRBanks:
 
 
 IFDEF RESPAWN_INSTEAD_OF_DEATH
-PauseRespawn:
-	; Check conditions where we shouldn't allow respawn
-	LDA PlayerLock
-	BNE PauseRespawn_Exit
-	; BNE PauseRespawn_ShowPauseScreen
-
-PauseRespawn_KillPlayer:
-	JSR KillPlayer
-PauseRespawn_Exit:
-	LDA IsHorizontalLevel
-	BEQ PauseRespawn_Vertical
-	JMP HorizontalLevel_CheckSubArea
-PauseRespawn_Vertical:
-	JMP VerticalLevel_ProcessFrame
-
-PauseRespawn_ShowPauseScreen:
-	JSR PauseScreen_ExtraLife
-	JMP SetStack100Pause
-
-RespawnPlayer:
-	; Stop invincibility music
-	LDA MusicPlaying1
-	CMP #Music1_Invincible
-	BNE RespawnPlayer_AfterMusic
-	LDY CurrentMusicIndex
-	LDA LevelMusicIndexes, Y
-	STA MusicQueue1
-RespawnPlayer_AfterMusic:
-	LDA #SpriteAnimation_Standing
-	STA PlayerAnimationFrame
-	RTS
-
-
-ResetSubAreaJarLayout:
-	LDA #PRGBank_6_7
-	JSR ChangeMappedPRGBank
-
-	JSR ClearSubAreaTileLayout
-
-	LDA #PRGBank_0_1
-	JSR ChangeMappedPRGBank
-
-	RTS
 
 ENDIF
 

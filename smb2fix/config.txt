@@ -45,9 +45,15 @@ Skip enter on success = 1
 # The player no longer drop an held item when holding B when doing a super jump.
 No item drop from super jump = 0
 
+# Quickly respawn instead of waiting! Also plays the death sound effect that was suppose to play when you died.
+# I took some of the code I made for Shell & Cherries and some of the smb2 disassembly to make a version that can be compatible.
+Respawn instead of death = 1
+
+# If you have quick respawn on and want to turn off the the death sound effect.
+Mute respawn sound = 0
+
 # Fixes a critical bug with the autobomb that would corrupt the memory. Fireball should spawn correctly from every angle now!
-# This patch has a good chance to not get applied due to some shifting SMB2edit can do if you use custom sprites.
-# I tried making it has compatible has possible, I just don't know how SMB2Edit assign the new enemies IDs.
+# This patch has a good chance to not get applied due to some shifting SMB2edit do to enemy ID's.
 # If you can't apply this patch, I wouldn't use the autobomb at all.
 Fix auto bomb = 0
 
@@ -59,3 +65,13 @@ Disable bonus chance = 0
 
 # Go to the Charater Select screen after death
 Character select after death = 0
+
+# Make it so the background only change to one static color
+# This color can be changed at 0x
+Single color bomb flash = 0
+
+# Disable the falling sound effect in 1-1 when starting the game
+Disable falling sound = 0
+
+# Allow you to go trough a door with any items
+Any items through doors = 0
