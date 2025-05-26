@@ -20,3 +20,8 @@ void Io::press_enter_to_exit(void) {
   std::cout << "Press enter to exit the program...";
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 }
+
+void Io::press_enter_to_continue(void) {
+  std::cout << "Press enter to continue" << std::endl;
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+}

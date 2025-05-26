@@ -19,13 +19,15 @@ static void set_string_config(std::string &result, uint16_t &set, const std::str
     std::size_t first_quote = value.find('\"');
     std::size_t second_quote = value.rfind('\"');
     if (first_quote == std::string::npos || second_quote == std::string::npos || first_quote == second_quote) {
-      Io::print_error_message("When reading the file output name");
+      std::cerr << "Error when reading the file output name in the config file" << std::endl;
+      Io::press_enter_to_continue();
       set ^= SAME_FILE_OUT;
     }
     else {
       result = value.substr(first_quote + 1, second_quote - (first_quote + 1));
       if (result.empty()) {
-        std::cerr << "Error! File name can't be empty in the config file" << std::endl;
+        std::cerr << "File name can't be empty in the config file" << std::endl;
+        Io::press_enter_to_continue();
         set ^= SAME_FILE_OUT;
       }
     }
@@ -68,7 +70,8 @@ static void sanitize_line(std::string &line) {
     return;
   std::size_t separator = line.find('=');
   if (separator == std::string::npos || line.begin() + separator + 1 == line.end()) {
-    Io::print_error_message("With config line \"" + line + "\" it will be ignored");
+    std::cerr << "Error with the config line \"" + line + "\". It will be ignored" << std::endl;
+    Io::press_enter_to_continue();
     line.clear();
   }
 }
@@ -78,12 +81,12 @@ void ConfigParser::ParseConfigFile(Config &config) {
   std::string line;
 
   if (!std::filesystem::exists("config.txt")) {
-    Io::print_error_message("Couldn't locate config file");
+    std::cerr << "Couldn't locate the config file. Make sure it's in the same directory as the program." << std::endl;
     return;
   }
   config_file.open("config.txt");
   if (config_file.fail()) {
-    Io::print_error_message("When opening the config file");
+    std::cerr << "Couldn't open the config file" << std::endl;
     return;
   }
   while (std::getline(config_file, line)) {

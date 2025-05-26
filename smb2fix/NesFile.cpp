@@ -226,7 +226,7 @@ static constexpr std::array<uint8_t, 3> Original_EF60 {
   0x20, 0x60, 0xEF  // JSR $EF60
 };
 
-static constexpr uint32_t SpriteColorFix_CPY_addr = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x9C21 - 0x8000);
+static constexpr uint32_t SpriteColorFix_CPY_addr = generate_rom_addr(0x06, 0x9C21);
 static constexpr std::array<uint8_t, 2> Fixed_SpriteColorFix_CPY{
   0xC0, 0x0C        // CPY #$0C
 };
