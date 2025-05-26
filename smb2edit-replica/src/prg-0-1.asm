@@ -8190,6 +8190,7 @@ HandlePlayerState_Respawning:
 	STA InSubspaceOrJar
 	STA SubspaceTimer
   STA InJarType
+  STA PlayerRidingCarpet
 
 	JSR RestorePlayerToFullHealth
 

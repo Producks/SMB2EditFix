@@ -307,7 +307,7 @@ static constexpr std::array<uint8_t, 2> HandlePlayerState_Dying_table {
 };
 
 static constexpr uint32_t HandlePlayerState_Respawning_addr = generate_rom_addr(0x00, 0xBB52);
-static constexpr std::array<uint8_t, 96> HandlePlayerState_Respawning {
+static constexpr std::array<uint8_t, 99> HandlePlayerState_Respawning {
   0xA9, 0x00,         // LDA #PlayerState_Normal
   0x85, 0x50,         // STA PlayerState
   0x85, 0x3C,         // STA PlayerXVelocity
@@ -338,6 +338,7 @@ static constexpr std::array<uint8_t, 96> HandlePlayerState_Respawning {
   0x8D, 0x28, 0x06,   // STA InSubspaceOrJar
   0x8D, 0xB7, 0x04,   // STA SubspaceTimer
   0x8D, 0xEE, 0x04,   // STA InJarType
+  0X8D, 0XB2, 0X04,   // STA PlayerRidingCarpet
   0x20, 0x18, 0xF2,   // JSR RestorePlayerToFullHealth         
   0x20, 0x33, 0xFE,   // JSR LoadCharacterCHRBanks
   0x20, 0xDA, 0xF6,   // JSR DoAreaReset

@@ -43,7 +43,7 @@ Skip enter on success = 1
 # Random patches that I made for a few of my past projects or that are from the smb2 disassembly.
 
 # The player no longer drop an held item when holding B when doing a super jump.
-No item drop from super jump = 0
+No item drop from super jump = 1
 
 # Quickly respawn instead of waiting! Also plays the death sound effect that was suppose to play when you died.
 # I took some of the code I made for Shell & Cherries and some of the smb2 disassembly to make a version that can be compatible.
@@ -58,17 +58,17 @@ Mute respawn sound = 1
 Fix auto bomb = 0
 
 # Restore the missing frame of animation that the game skip
-Fix CHR cycle = 0
+Fix CHR cycle = 1
 
 # Skips bonus chance after the end of a level
-Disable bonus chance = 0
+Disable bonus chance = 1
 
 # Go to the Charater Select screen after death
-Character select after death = 0
+Character select after death = 1
 
 # Make it so the background only change to one static color when there an explosion
 # The color can be changed at location 0x7E17
 Single color bomb flash = 1
 
 # Disable the falling sound effect in 1-1 when starting the game
-Disable falling sound = 0
+Disable falling sound = 1

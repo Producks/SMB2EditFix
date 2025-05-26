@@ -25,7 +25,7 @@ static void set_string_config(std::string &result, uint16_t &set, const std::str
     else {
       result = value.substr(first_quote + 1, second_quote - (first_quote + 1));
       if (result.empty()) {
-        Io::print_error_message("The file output name can't be empty");
+        std::cerr << "Error! File name can't be empty in the config file" << std::endl;
         set ^= SAME_FILE_OUT;
       }
     }
