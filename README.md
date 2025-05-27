@@ -81,7 +81,7 @@ Sprite data is now properly formatted by adding the missing $01.
 ### Why does this matter?
 Sprite level data is split into pages for an area. Each page will contain the enemy data for that page; if it's empty, it will just be $01. You have to do this for the number of pages in the area +1. SMB2edit doesn't add the +1, and it ends up resulting in a bug where sprites from the next area clip into the end of the page in the current area.
 
-![](https://i.imgur.com/uUSZNPD.png)  
+![](https://github.com/Producks/SMB2EditFix/blob/main/readme_pics/enemy_clip.png?raw=true)  
 Here, the bug is in action: in 6-2, birds from the next area clip into this area. This area has no enemies normally.
 
 ### Level data gone wild with 0xFF (Level fix)
@@ -90,7 +90,7 @@ This issue seems to be only present in the 0.3.0 version of SMB2edit, but if it'
 
 #### Why does this matter?
 Let's take 6-1 area 1 as an example:   
-![](https://i.imgur.com/buHO8JJ.png)  
+![](https://github.com/Producks/SMB2EditFix/blob/main/readme_pics/ending_ff.png?raw=true)  
 
 ```
 .db $89, $ea, $30, $19 ; Level header
@@ -115,7 +115,7 @@ Let's take 6-1 area 1 as an example:
 
 SMB2Edit uses a different format than the vanilla game for level data, but the `0xFF` works the same as the original. It signifies the end of reading area data for that area. For whatever reason, a double terminating `0xFF` is present in the middle of some level data. Which ends up creating rooms that render with missing data in them. The fix is just to shift any double `0xFF` sequences to the end so they don't cause issues anymore. Levels will now render properly!
 
-![](https://i.imgur.com/IyfNOWR.png)  
+![](https://github.com/Producks/SMB2EditFix/blob/main/readme_pics/fix_ff.png?raw=true)  
 The level now load properly with just that simple fix!
 
 ### SEI and his nemesis the NMI (Wrappers injection)
@@ -128,7 +128,7 @@ This bug is more complex than the others and was a huge nightmare to figure out.
 Since I don't have infinite time left, I just went with the [wrapper](https://en.wikipedia.org/wiki/Wrapper_function) approach. I ended up wrapping all subroutines that use `SEI` and `CLI` to avoid the issue with a wrapper that disables the NMI correctly and restores it after. This is not an efficient and elegant solution. But it gets the job done; if I had more time, I would rewrite these subroutines to just handle it correctly. This comes at the cost of using extra code space, but that code space is not used unless you're using a patch that takes this space.
 
 #### Example
-![](https://i.imgur.com/anxE1XB.png) ![](https://i.imgur.com/98P4eoK.png)  
+![](https://github.com/Producks/SMB2EditFix/blob/main/readme_pics/sei_bugged.png?raw=true) ![](https://github.com/Producks/SMB2EditFix/blob/main/readme_pics/sei_fix.png?raw=true)  
 On the left, you can see the level didn't load properly due to bad timing on the bank switch. The picture on the right shows the level now loading properly no matter the timing. No more weird, random loading with this patch!
 
 ### The classic programmer mistake: Missing 1 loop iteration(Sprite color fix)
@@ -148,7 +148,7 @@ Adds the CHR A12 inversion flag when bank switching.
 SMB2 uses a flag for the [MMC3](https://www.nesdev.org/wiki/MMC3) mapper to invert the graphics slots. This flag needs to be applied at all times, or you'll encounter graphical glitches. SMB2edit's subroutines forgot to set this flag, so the glitch occurs whenever those routines are called. You don't visually see the glitch because rendering is turned off when they are called, except when you are in a subspace area or a jar area.
 
 ### Example 
-![](https://i.imgur.com/RxzL04k.png) ![](https://i.imgur.com/obXERAk.png)  
+![](https://github.com/Producks/SMB2EditFix/blob/main/readme_pics/bugged_jar.png?raw=true) ![](https://github.com/Producks/SMB2EditFix/blob/main/readme_pics/bugged_sub_space.png?raw=true)  
 Both these areas experience crazy rendering glitches when exiting them if the flag isn't set. No more glitchy area flickering when leaving an area now!
 
 ## Closing thought
