@@ -20,8 +20,6 @@
 #define CHR_A12_inversion 0x80
 #define ABS_LDA 0xA9
 
-// Generate the rom address with the bank number + the address relative to that bank number
-// All done at compile time with constexpr!
 constexpr uint32_t generate_rom_addr(uint8_t bank_nbr, uint32_t adrr) {
   uint32_t bank_offset = 0x8000;
   if (bank_nbr == 0x1E)
@@ -29,7 +27,7 @@ constexpr uint32_t generate_rom_addr(uint8_t bank_nbr, uint32_t adrr) {
   return (HEADER_SIZE + BANK_SIZE * bank_nbr) + (adrr - bank_offset);
 }
 
-// TODO: I should just constexpr func everything under here, but a typo is too easy to make. So it will stay this way for now.
+// TODO: I should just constexpr func everything under here, but a typo is to easy to make. So it will stay this way for now.
 static constexpr uint32_t CHARACTER_SELECT_PAL_ADDR =  generate_rom_addr(0x1E, 0xE0D5);
 static constexpr uint32_t CHARACTER_SELECT_PAL_ADDR_DST = CHARACTER_SELECT_PAL_ADDR + 0x1B;
 static constexpr uint32_t WORLD_PAL_ADDR = (HEADER_SIZE + BANK_SIZE * 0x6) + (0x801C - 0x8000);
