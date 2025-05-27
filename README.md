@@ -1,5 +1,5 @@
 # SMB2EditFix
-Project commissioned by DearTruly for 25 hours + 5.  
+Project commissioned by DearTruly for 25 hours, plus 5 extra hours due to taking more time.  
 The executables for Linux and Windows can be found [here](https://github.com/Producks/SMB2EditFix/releases) in the release section.  
 
 ## What is this?
@@ -68,14 +68,14 @@ You can submit an issue in the GitHub section or just contact me directly on Dis
 A disassembly can be found in the folder smb2edit-replica. Compiling with the flag -dSMBEDIT will give you an exact copy of what SMB2edit injects into the rom. This is extremely helpful for anyone that wants to do asm work when using SMB2edit. Some of the comments that I used for this project are there. But this should still extremely helpful for anyone doing asm stuff.
 
 ## Technical explanation of the SMB2Editfix patches
-### 50 shades of black
+### 50 shades of black (Color fix)
 Restores all 0x0D to 0x0F, like the original. They will look exactly the same too!
 
 #### Why does this matter?
 The NES has multiple black colors, but not all of them should be used.  
 SMB2edit changes all black colors to 0x0D. This is an issue for people playing those hacks on console; it can cause flickering and crazy visual effects. If you want to read more about it, you can find more info about it [here](https://www.nesdev.org/wiki/Color_$0D_games)
 
-### Sprite level data is looking for his friend 0x01
+### Sprite level data is looking for his friend 0x01 (Sprite level data fix)
 Sprite data is now properly formatted by adding the missing $01.
 
 ### Why does this matter?
@@ -84,7 +84,7 @@ Sprite level data is split into pages for an area. Each page will contain the en
 ![](https://i.imgur.com/uUSZNPD.png)  
 Here, the bug is in action: in 6-2, birds from the next area clip into this area. This area has no enemies normally.
 
-### Level data gone wild with 0xFF
+### Level data gone wild with 0xFF (Level fix)
 Fixes some of the levels that had a double terminating `0xFF` early.
 This issue seems to be only present in the 0.3.0 version of SMB2edit, but if it's there in later versions, it should catch it and fix it. With how the detection works for the double `0xFF`, it will always list changes, but the result will always be the same!
 
@@ -118,8 +118,8 @@ SMB2Edit uses a different format than the vanilla game for level data, but the `
 ![](https://i.imgur.com/IyfNOWR.png)  
 The level now load properly with just that simple fix!
 
-### SEI and his nemesis the NMI
-The program will fix a critical bug that makes world 6 and world 7 load the level the wrong way depending on timing.
+### SEI and his nemesis the NMI (Wrappers injection)
+The program will add wrappers around subroutines affected by the ```SEI``` issue.
 
 #### What is SEI, NMI and why does it matter?
 This bug is more complex than the others and was a huge nightmare to figure out. The new code that SMB2edit applies is using instructions called `SEI` and `CLI`. `SEI` disables [hardware interrupts](https://en.wikipedia.org/wiki/Interrupt), and `CLI` restores them.But... SMB2 doesn't use regular interrupts, so this doesn't work as intended. So what is it trying to disable? Probably the [NMI](https://www.nesdev.org/wiki/NMI), which is something that launches and can't be stopped by `SEI`. This would normally be fine, but since the code we're calling uses [bank switching](https://en.wikipedia.org/wiki/Bank_switching), and the SMB2edit subroutine doesn't save the current bank in the bank variable, we end up sometimes or always (depending on timing) reading random garbage data from another bank since the NMI switched the bank while we were reading some of the level data. This goes extremely wrong and ends up just creating garbage area. This only happens in world 6 and world 7 since that level data is in a different bank from worlds 1-5.
@@ -131,7 +131,7 @@ Since I don't have infinite time left, I just went with the [wrapper](https://en
 ![](https://i.imgur.com/anxE1XB.png) ![](https://i.imgur.com/98P4eoK.png)  
 On the left, you can see the level didn't load properly due to bad timing on the bank switch. The picture on the right shows the level now loading properly no matter the timing. No more weird, random loading with this patch!
 
-### The Classic Programmer Mistake: Missing 1 Loop Iteration
+### The classic programmer mistake: Missing 1 loop iteration(Sprite color fix)
 Fixes a loop issue that caused the last sprite color palette to load incorrectly.
 
 ### Why does it matter?
@@ -156,6 +156,6 @@ I would have never touched this without money involve since there are better too
 
 ## Credits
 This project wouldn't be possible without these tools or resources:
-* Xkeeper0 for the smb2 disassembly
-* The Mesen emulator for saving me hours when making the 0.3.0 replica.
-* NESdev wiki for the resources.
+* [Xkeeper0](https://github.com/Xkeeper0) for the smb2 disassembly
+* The [Mesen](https://github.com/SourMesen/Mesen) emulator for saving me hours when making the 0.3.0 replica.
+* [NESdev](https://www.nesdev.org/wiki/Nesdev_Wiki) wiki for the resources. Like seriously, this project wouldn't exist without that wiki.
